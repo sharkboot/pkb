@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* 白色主题 - 简洁风格 */
+    --background: 210 20% 98%;
+    --foreground: 220 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+    --primary: 220 15% 15%;           /* 深灰色 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 15% 93%;
+    --secondary-foreground: 220 15% 15%;
+    --muted: 210 15% 93%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 220 15% 15%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 13% 87%;
+    --input: 210 13% 87%;
+    --ring: 220 15% 50%;
+
+    /* 侧边栏 */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 15% 15%;
+    --sidebar-primary: 220 15% 15%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 210 13% 87%;
+    --sidebar-ring: 220 15% 50%;
+
+    /* 消息气泡 - 白色主题 */
+    --user-bubble: 0 0% 100%;
+    --user-bubble-foreground: 220 15% 15%;
+    --assistant-bubble: 0 0% 100%;
+    --assistant-bubble-foreground: 220 15% 15%;
+  }
+
+  .dark {
+    --background: 220 15% 8%;
+    --foreground: 210 15% 90%;
+    --card: 220 15% 12%;
+    --card-foreground: 210 15% 90%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 210 15% 90%;
+    --primary: 210 15% 90%;
+    --primary-foreground: 220 15% 8%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 210 15% 90%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 210 15% 90%;
+    --accent-foreground: 220 15% 8%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 210 15% 60%;
+
+    /* 侧边栏深色 */
+    --sidebar-background: 220 15% 10%;
+    --sidebar-foreground: 210 15% 90%;
+    --sidebar-primary: 210 15% 90%;
+    --sidebar-primary-foreground: 220 15% 8%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 210 15% 90%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 210 15% 60%;
+
+    /* 消息气泡深色 - 白色主题 */
+    --user-bubble: 220 15% 12%;
+    --user-bubble-foreground: 210 15% 90%;
+    --assistant-bubble: 220 15% 12%;
+    --assistant-bubble-foreground: 210 15% 90%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* 消息动画 */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+/* 输入框聚焦效果 */
+.input-glow:focus {
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+/* 拖拽区域样式 */
+.drop-zone {
+  @apply border-2 border-dashed border-transparent transition-all duration-200;
+}
+
+.drop-zone.active {
+  @apply border-gray-400 bg-gray-50;
+}
