@@ -112,6 +112,10 @@ class SystemConfig(BaseModel):
     llm_api_key: str = Field("", alias="llmApiKey")
     llm_base_url: str = Field("https://api.openai.com/v1", alias="llmBaseUrl")
     llm_model_name: str = Field("gpt-4", alias="llmModelName")
+
+    vision_api_key: str = Field("", alias="visionApiKey")
+    vision_base_url: str = Field("https://api.openai.com/v1", alias="visionBaseUrl")
+    vision_model_name: str = Field("gpt-4o", alias="visionModelName")
     
     embed_api_key: str = Field("", alias="embedApiKey")
     embed_base_url: str = Field("https://api.openai.com/v1", alias="embedBaseUrl")

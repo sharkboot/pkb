@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_base_url: str = "https://api.openai.com/v1"
     llm_model_name: str = "gpt-4"
+
+    vision_api_key: str = ""
+    vision_base_url: str = "https://api.openai.com/v1"
+    vision_model_name: str = "gpt-4o"
     
     # Embedding 配置默认复用 LLM 配置
     embed_api_key: str = ""

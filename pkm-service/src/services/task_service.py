@@ -90,22 +90,33 @@ class TaskService:
         image_urls = re.findall(r'!\[.*?\]\((.*?)\)', content)
 
         try:
-            prompt = "请分析以下内容，提取并整理可能来自图片/OCR的信息："
-            messages = [{"role": "user", "content": prompt}]
-
             if image_urls:
+                prompt = "请分析这些图片中的内容，提取并整理所有文字信息："
+                messages = [{"role": "user", "content": prompt}]
                 ocr_result = await chat_completion_with_images(
                     messages=messages,
                     image_urls=image_urls,
                 )
             else:
-                ocr_result = await chat_completion(messages=messages)
+                ocr_result = await chat_completion(
+                    messages=[{"role": "user", "content": "请分析以下内容：\n\n" + content}]
+                )
 
-            # 更新知识内容
+            # 调用 LLM 生成摘要
+            summary_prompt = f"请为以下内容生成一个简洁的摘要，不超过100字，直接输出摘要文本，不要使用markdown格式：\n\n{ocr_result}"
+            summary = await chat_completion(
+                messages=[{"role": "user", "content": summary_prompt}]
+            )
+
+            # 保留原始图片，追加 OCR 结果
+            ocr_content = content + "\n\n---\n## OCR 识别结果\n\n" + ocr_result
+
+            # 更新知识内容（保留图片 + OCR 结果）
             await self.storage.update_knowledge(
                 UUID(task.target_id),
                 {
-                    "content": ocr_result,
+                    "content": ocr_content,
+                    "summary": summary,
                     "source": "OCR",
                 }
             )
@@ -114,6 +125,7 @@ class TaskService:
                 "message": "OCR任务已完成",
                 "target_id": task.target_id,
                 "ocr_result": ocr_result,
+                "summary": summary,
                 "content_length": len(content),
                 "images_count": len(image_urls),
             }
@@ -129,13 +141,30 @@ class TaskService:
         content = await self._get_knowledge_content(task.target_id)
         if not content:
             return {"message": "未找到内容", "target_id": task.target_id}
-        
+
         mode = task.params.get("mode", "daily")
-        prompt = f"请为以下内容生成一个简洁的{mode}总结（不超过100字）：\n\n{content}"
-        
+
+        # 提取图片 URL
+        import re
+        image_urls = re.findall(r'!\[.*?\]\((.*?)\)', content)
+        text_only = re.sub(r'!\[.*?\]\(.*?\)', '', content).strip()
+
         try:
-            summary = await chat_completion(messages=[{"role": "user", "content": prompt}])
-            
+            if image_urls:
+                # 图片输入：先提取图片内容，再用模型总结
+                extract_prompt = "请分析这些图片，提取其中的文字和关键信息："
+                image_content = await chat_completion_with_images(
+                    messages=[{"role": "user", "content": extract_prompt}],
+                    image_urls=image_urls,
+                )
+                full_content = f"{text_only}\n\n图片内容：\n{image_content}" if text_only else f"图片内容：\n{image_content}"
+            else:
+                # 纯文本输入：直接总结
+                full_content = text_only
+
+            summary_prompt = f"请为以下内容生成一个简洁的总结，不超过100字，直接输出总结文本，不要使用markdown格式：\n\n{full_content}"
+            summary = await chat_completion(messages=[{"role": "user", "content": summary_prompt}])
+
             await self.storage.update_knowledge(UUID(task.target_id), {"summary": summary})
             return {"message": f"{mode}总结任务已完成", "target_id": task.target_id, "summary": summary}
         except Exception as e:

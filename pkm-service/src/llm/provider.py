@@ -12,10 +12,19 @@ def _create_httpx_client() -> httpx.Client:
 
 
 def _get_openai_client() -> OpenAI:
-    """创建 OpenAI 客户端"""
+    """创建文本 LLM 客户端"""
     return OpenAI(
         api_key=settings.llm_api_key,
         base_url=settings.llm_base_url,
+        http_client=_create_httpx_client(),
+    )
+
+
+def _get_vision_client() -> OpenAI:
+    """创建视觉模型客户端"""
+    return OpenAI(
+        api_key=settings.vision_api_key or settings.llm_api_key,
+        base_url=settings.vision_base_url or settings.llm_base_url,
         http_client=_create_httpx_client(),
     )
 
@@ -67,7 +76,7 @@ async def chat_completion_with_images(
                 except Exception:
                     continue
 
-    client = _get_openai_client()
+    client = _get_vision_client()
 
     def _call():
         final_messages = []
@@ -87,7 +96,7 @@ async def chat_completion_with_images(
                 final_messages.append({"role": role, "content": content})
 
         response = client.chat.completions.create(
-            model=settings.llm_model_name,
+            model=settings.vision_model_name,
             messages=final_messages,
             **kwargs
         )
