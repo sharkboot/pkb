@@ -17,7 +17,7 @@ app = FastAPI(
     description="基于 Python + LLM + Markdown + 向量检索 的本地知识管理系统",
 )
 
-add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
@@ -25,9 +25,9 @@ add_middleware(
     allow_headers=["*"],
 )
 
-include_router(api_router)
+app.include_router(api_router)
 
-@get("/")
+@app.get("/")
 async def root():
     logger.info("Root endpoint accessed")
     return {"message": "PKM Knowledge Management System API", "version": "v2.0.0"}
