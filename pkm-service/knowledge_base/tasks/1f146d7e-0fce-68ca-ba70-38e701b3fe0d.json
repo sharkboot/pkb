@@ -1,0 +1,14 @@
+{
+  "id": "1f146d7e-0fce-68ca-ba70-38e701b3fe0d",
+  "task_type": "summary",
+  "target_id": "1f146d7e-0fb9-6c9c-86bf-4346204eb49b",
+  "params": {},
+  "status": "completed",
+  "result": {
+    "message": "daily总结任务已完成",
+    "target_id": "1f146d7e-0fb9-6c9c-86bf-4346204eb49b",
+    "summary": "今日完成ceshishuju的采集、清洗和校验，修复异常3条，结果已同步至库并生成可视化报告。"
+  },
+  "created_at": "2026-05-03T18:07:23.178004",
+  "updated_at": "2026-05-03T18:07:38.963102"
+}

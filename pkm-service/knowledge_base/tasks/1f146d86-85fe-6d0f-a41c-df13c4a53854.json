@@ -1,0 +1,14 @@
+{
+  "id": "1f146d86-85fe-6d0f-a41c-df13c4a53854",
+  "task_type": "summary",
+  "target_id": "1f146d86-85f1-6627-a5d0-d7365638ce72",
+  "params": {},
+  "status": "completed",
+  "result": {
+    "message": "daily总结任务已完成",
+    "target_id": "1f146d86-85f1-6627-a5d0-d7365638ce72",
+    "summary": "随机刷题优点：实战检验、查漏补缺；缺点：知识点零散。建议每隔一段时间随机刷题，保持学习效果。"
+  },
+  "created_at": "2026-05-03T18:11:10.319335",
+  "updated_at": "2026-05-03T18:11:20.336134"
+}

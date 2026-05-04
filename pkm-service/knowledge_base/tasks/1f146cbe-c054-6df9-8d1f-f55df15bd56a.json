@@ -1,0 +1,14 @@
+{
+  "id": "1f146cbe-c054-6df9-8d1f-f55df15bd56a",
+  "task_type": "ocr",
+  "target_id": "1f146cbe-c049-6e2b-8555-6a8ec875cb85",
+  "params": {},
+  "status": "completed",
+  "result": {
+    "message": "OCR任务已处理",
+    "target_id": "1f146cbe-c049-6e2b-8555-6a8ec875cb85",
+    "content_length": 54223
+  },
+  "created_at": "2026-05-03T16:41:47.727205",
+  "updated_at": "2026-05-03T16:41:47.737209"
+}

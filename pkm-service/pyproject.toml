@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pkm-service"
+version = "2.0.0"
+description = "PKM Knowledge Management System"
+requires-python = ">=3.9"
+
+dependencies = [
+    "fastapi==0.110.0",
+    "uvicorn==0.28.0",
+    "pydantic==2.6.1",
+    "pydantic-settings==2.2.1",
+    "python-multipart==0.0.9",
+    "python-dotenv==1.0.0",
+    "aiofiles==23.2.1",
+    "markdown-it-py==3.0.0",
+    "python-frontmatter==1.1.0",
+    "uuid6==2024.1.12",
+    "apscheduler==3.10.4",
+    "requests==2.31.0",
+    "httpx>=0.27.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["knowledge_base*"]

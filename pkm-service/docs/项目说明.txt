@@ -1,0 +1,579 @@
+# PKM 本地知识管理系统 PRD（V1.0）
+
+## 项目名称
+
+**Local PKM Engine**
+
+副标题：
+
+> 基于 Python + LLM + Markdown + 向量检索 的本地知识管理系统
+
+---
+
+# 一、项目背景
+
+传统笔记工具（如 Obsidian、Notion）强调“记录”，但缺乏自动整理、自动归纳和长期知识沉淀能力。
+
+本项目目标不是构建另一个笔记软件，而是构建：
+
+> 一个可持续成长的本地知识操作系统（Second Brain）
+
+系统核心能力：
+
+* 本地优先（Local First）
+* Markdown 永久可迁移存储
+* LLM 自动理解与结构化
+* 向量数据库增强检索（可选）
+* 支持纯 Markdown 模式运行
+* 自动知识合并
+* 自动总结与归档
+* 面向 Agent 的长期演进架构
+
+---
+
+# 二、项目目标
+
+## 2.1 核心目标
+
+实现一个：
+
+### 可自动整理知识的本地知识系统
+
+即：
+
+### 用户负责输入，系统负责组织
+
+系统自动完成：
+
+* 内容理解
+* 分类归档
+* 标签生成
+* 内容关联
+* 知识摘要
+* 定期合并
+* 周期性总结
+* 长期知识沉淀
+
+最终形成：
+
+> 越使用越聪明的第二大脑
+
+---
+
+# 三、MVP（第一版）范围
+
+第一版严格聚焦：
+
+## 输入 → 理解 → 存储 → 检索 → 合并
+
+不做：
+
+* 前端复杂交互
+* 知识图谱 UI
+* 多用户系统
+* 云同步
+* 权限系统
+* SaaS 化部署
+
+---
+
+# 四、核心业务流程
+
+```text
+用户输入（文本 / 图片）
+        ↓
+内容预处理（OCR / 清洗）
+        ↓
+LLM 内容理解（摘要 / 分类 / 标签）
+        ↓
+知识标准化（统一结构）
+        ↓
+Markdown 持久化存储
+        ↓
+可选：Embedding + 向量索引
+        ↓
+知识召回（语义检索）
+        ↓
+周期性知识合并
+        ↓
+周报 / 月报 / 总结系统
+```
+
+---
+
+# 五、系统架构设计
+
+```text
+┌──────────────────────┐
+│ Input Layer          │
+│ Text / Screenshot    │
+└─────────┬────────────┘
+          ↓
+┌──────────────────────┐
+│ Processing Layer     │
+│ OCR + LLM Engine     │
+└─────────┬────────────┘
+          ↓
+┌──────────────────────┐
+│ Storage Layer        │
+│ Markdown + Metadata  │
+└─────────┬────────────┘
+          ↓
+┌──────────────────────┐
+│ Retrieval Layer      │
+│ MD Search / Vector   │
+└─────────┬────────────┘
+          ↓
+┌──────────────────────┐
+│ Scheduler Layer      │
+│ Merge + Summary      │
+└──────────────────────┘
+```
+
+---
+
+# 六、技术选型
+
+---
+
+## 6.1 核心框架
+
+### API 服务
+
+```text
+FastAPI
+```
+
+原因：
+
+* Python 原生生态最佳
+* 异步性能优秀
+* 与 Agent / LLM 兼容性强
+* 自动生成 Swagger 文档
+
+---
+
+## 6.2 定时任务
+
+```text
+APScheduler
+```
+
+原因：
+
+* 轻量
+* 本地部署简单
+* 满足每日总结需求
+
+不使用：
+
+```text
+Celery
+```
+
+原因：
+
+* 第一版过重
+* 维护成本高
+
+---
+
+## 6.3 向量数据库（可选）
+
+第一版支持双模式：
+
+### Mode A：纯 Markdown 模式（默认）
+
+无需向量数据库：
+
+* 文件系统检索
+* Tag 检索
+* Full Text Search
+
+### Mode B：向量增强模式
+
+推荐：
+
+```text
+Milvus
+```
+
+原因：
+
+* 本地部署成熟
+* 可扩展性强
+* Agent 场景兼容性好
+
+---
+
+## 6.4 LLM 接入层
+
+支持：
+
+* OpenAI API（如 OpenAI 模型）
+* 本地模型（如 Ollama）
+* 企业私有模型
+
+通过统一 Provider 抽象实现：
+
+```python
+BaseLLMProvider
+```
+
+避免模型绑定。
+
+---
+
+# 七、核心模块设计
+
+---
+
+# Module A：Input Service
+
+## 职责
+
+负责接收：
+
+* 文本输入
+* 图片输入（截图）
+* 批量导入内容
+
+---
+
+## 输入类型
+
+### Type 1：纯文本
+
+例如：
+
+```text
+Redis 缓存穿透解决方案
+```
+
+---
+
+### Type 2：截图
+
+例如：
+
+* 面试题截图
+* 博客截图
+* 课程截图
+
+系统自动：
+
+```text
+OCR → 文本提取 → 清洗
+```
+
+---
+
+# Module B：Knowledge Processing Engine（核心）
+
+这是系统核心价值模块。
+
+---
+
+## 功能 1：内容清洗
+
+负责：
+
+* OCR 噪声去除
+* 重复内容清理
+* 标点统一
+* Markdown 格式标准化
+
+---
+
+## 功能 2：LLM 理解
+
+输出：
+
+### 自动摘要
+
+### 自动分类
+
+例如：
+
+```text
+Backend / Redis / Interview
+```
+
+### 自动标签
+
+例如：
+
+```text
+Redis
+缓存
+高并发
+面试题
+```
+
+### 自动关联
+
+例如：
+
+```text
+关联知识：
+缓存雪崩
+缓存击穿
+Cache Aside
+```
+
+---
+
+## 功能 3：知识评分（重要）
+
+系统为知识打分：
+
+```text
+score: 0.0 ~ 1.0
+```
+
+用于：
+
+* 排序
+* 合并优先级
+* 长期沉淀价值判断
+
+评分依据：
+
+* 重复出现频率
+* 用户访问频率
+* LLM 判断重要性
+
+---
+
+# Module C：Markdown Storage Engine
+
+---
+
+# 八、Markdown 存储规范（必须统一）
+
+统一 Frontmatter：
+
+```md
+---
+id: UUID
+title: Redis缓存穿透问题
+tags:
+  - Redis
+  - Backend
+  - Interview
+category: Permanent Note
+source: Screenshot
+created_at: 2026-05-03
+updated_at: 2026-05-03
+score: 0.92
+related:
+  - Cache Aside Pattern
+  - Redis 缓存雪崩
+embedding: true
+---
+
+# Redis缓存穿透问题
+
+正文内容...
+```
+
+---
+
+# 九、目录结构设计
+
+```text
+knowledge_base/
+│
+├── inbox/
+│   └── 临时输入区
+│
+├── fleeting_notes/
+│   └── 快速记录
+│
+├── literature_notes/
+│   └── 阅读笔记
+│
+├── permanent_notes/
+│   └── 永久知识
+│
+├── project_notes/
+│   └── 项目知识
+│
+├── summaries/
+│   ├── daily/
+│   ├── weekly/
+│   └── monthly/
+│
+└── archive/
+```
+
+遵循：
+
+### Inbox → Permanent → Summary → Archive
+
+知识生命周期完整闭环。
+
+---
+
+# 十、Retrieval Engine（检索系统）
+
+支持双模式：
+
+---
+
+## 模式 A：纯 Markdown 检索
+
+### 检索方式
+
+* 文件名检索
+* Tag 检索
+* 全文检索
+* Related Link 检索
+
+适用于：
+
+### 零依赖部署
+
+---
+
+## 模式 B：向量语义检索
+
+### 流程
+
+```text
+Markdown
+→ Chunk
+→ Embedding
+→ Milvus
+→ Semantic Search
+```
+
+支持：
+
+* 相似知识召回
+* 问答式搜索
+* Agent Memory
+
+---
+
+# 十一、Scheduler System
+
+---
+
+## 每日任务
+
+### Daily Summary
+
+自动生成：
+
+```text
+今天新增了哪些知识
+哪些知识被频繁访问
+哪些知识需要整理
+```
+
+---
+
+## 每周任务
+
+### Weekly Merge
+
+自动：
+
+* 去重
+* 合并相似知识
+* 提升 Permanent Notes
+
+---
+
+## 每月任务
+
+### Monthly Knowledge Review
+
+自动：
+
+* 输出成长总结
+* 高频知识领域分析
+* 知识盲区发现
+
+---
+
+# 十二、核心非功能需求
+
+---
+
+## 性能要求
+
+### 单次知识处理
+
+```text
+< 5s
+```
+
+（不含大模型响应）
+
+---
+
+## 稳定性要求
+
+### 本地文件永不丢失
+
+必须：
+
+### 先写文件，再更新索引
+
+绝不能反过来。
+
+---
+
+## 可迁移性要求
+
+即使：
+
+* 去掉向量数据库
+* 去掉大模型
+* 去掉服务端
+
+也必须保证：
+
+### Markdown 文件完整可用
+
+这是底线。
+
+---
+
+# 十三、项目目录（工程级）
+
+```text
+pkm-engine/
+│
+├── app/
+│   ├── api/
+│   ├── core/
+│   ├── services/
+│   ├── models/
+│   ├── scheduler/
+│   ├── storage/
+│   ├── retrieval/
+│   ├── vectorstore/
+│   ├── llm/
+│   ├── ocr/
+│   ├── utils/
+│   └── main.py
+│
+├── knowledge_base/
+│
+├── tests/
+│
+├── scripts/
+│
+├── requirements.txt
+│
+└── README.md
+```
+
+---
+
+
+
+
