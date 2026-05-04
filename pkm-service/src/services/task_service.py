@@ -87,7 +87,7 @@ class TaskService:
         
         # 使用 LLM 处理 OCR 内容
         try:
-            prompt = f"请分析以下内容，提取并整理可能来自图片/OCR的信息：\n\n{content[:2000]}"
+            prompt = f"请分析以下内容，提取并整理可能来自图片/OCR的信息：\n\n{content}"
             ocr_result = await chat_completion(messages=[{"role": "user", "content": prompt}])
             
             # 更新知识内容
@@ -119,7 +119,7 @@ class TaskService:
             return {"message": "未找到内容", "target_id": task.target_id}
         
         mode = task.params.get("mode", "daily")
-        prompt = f"请为以下内容生成一个简洁的{mode}总结（不超过100字）：\n\n{content[:2000]}"
+        prompt = f"请为以下内容生成一个简洁的{mode}总结（不超过100字）：\n\n{content}"
         
         try:
             summary = await chat_completion(messages=[{"role": "user", "content": prompt}])
@@ -138,7 +138,7 @@ class TaskService:
         if not content:
             return {"message": "未找到内容", "target_id": task.target_id}
         
-        prompt = f"判断以下内容是否应该归档，并给出归档类别建议：\n\n{content[:2000]}"
+        prompt = f"判断以下内容是否应该归档，并给出归档类别建议：\n\n{content}"
         
         try:
             advice = await chat_completion(messages=[{"role": "user", "content": prompt}])
