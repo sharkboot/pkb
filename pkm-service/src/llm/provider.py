@@ -1,48 +1,110 @@
+from openai import OpenAI
+from typing import Optional, Dict, Any, List
+import asyncio
+import base64
 import httpx
-from typing import Optional, Dict, Any
 from core.config import settings
+
+
+def _create_httpx_client() -> httpx.Client:
+    """创建 httpx 客户端，禁用代理自动检测避免版本兼容问题"""
+    return httpx.Client(timeout=60.0)
+
+
+def _get_openai_client() -> OpenAI:
+    """创建 OpenAI 客户端"""
+    return OpenAI(
+        api_key=settings.llm_api_key,
+        base_url=settings.llm_base_url,
+        http_client=_create_httpx_client(),
+    )
+
+
+def _get_embed_client() -> OpenAI:
+    """创建 Embedding 专用客户端"""
+    return OpenAI(
+        api_key=settings.final_embed_api_key,
+        base_url=settings.final_embed_base_url,
+        http_client=_create_httpx_client(),
+    )
+
 
 async def chat_completion(messages: list, **kwargs) -> str:
     """调用 LLM 聊天接口"""
-    headers = {
-        "Authorization": f"Bearer {settings.llm_api_key}",
-        "Content-Type": "application/json",
-    }
-    
-    payload = {
-        "model": settings.llm_model_name,
-        "messages": messages,
-        **kwargs
-    }
-    
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(
-            f"{settings.llm_base_url}/chat/completions",
-            headers=headers,
-            json=payload
+    client = _get_openai_client()
+
+    def _call():
+        response = client.chat.completions.create(
+            model=settings.llm_model_name,
+            messages=messages,
+            **kwargs
         )
-        response.raise_for_status()
-        data = response.json()
-        return data["choices"][0]["message"]["content"]
+        return response.choices[0].message.content
+
+    return await asyncio.to_thread(_call)
+
+
+async def chat_completion_with_images(
+    messages: List[Dict[str, Any]],
+    image_urls: Optional[List[str]] = None,
+    **kwargs
+) -> str:
+    """调用支持图片的 LLM 聊天接口（多模态）"""
+    # 下载图片
+    image_contents = []
+    if image_urls:
+        async with httpx.AsyncClient(timeout=30.0) as http_client:
+            for url in image_urls:
+                try:
+                    if url.startswith("data:image"):
+                        image_contents.append(url)
+                    else:
+                        resp = await http_client.get(url)
+                        resp.raise_for_status()
+                        content_type = resp.headers.get("content-type", "image/jpeg")
+                        b64_data = base64.b64encode(resp.content).decode("utf-8")
+                        image_contents.append(f"data:{content_type};base64,{b64_data}")
+                except Exception:
+                    continue
+
+    client = _get_openai_client()
+
+    def _call():
+        final_messages = []
+        for msg in messages:
+            content = msg.get("content", "")
+            role = msg.get("role", "user")
+
+            if image_contents:
+                parts = [{"type": "text", "text": content}] if content else []
+                for img in image_contents:
+                    parts.append({
+                        "type": "image_url",
+                        "image_url": {"url": img}
+                    })
+                final_messages.append({"role": role, "content": parts})
+            else:
+                final_messages.append({"role": role, "content": content})
+
+        response = client.chat.completions.create(
+            model=settings.llm_model_name,
+            messages=final_messages,
+            **kwargs
+        )
+        return response.choices[0].message.content
+
+    return await asyncio.to_thread(_call)
+
 
 async def create_embedding(text: str) -> list:
     """调用 Embedding 接口生成向量"""
-    headers = {
-        "Authorization": f"Bearer {settings.final_embed_api_key}",
-        "Content-Type": "application/json",
-    }
-    
-    payload = {
-        "model": settings.final_embed_model_name,
-        "input": text,
-    }
-    
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(
-            f"{settings.final_embed_base_url}/embeddings",
-            headers=headers,
-            json=payload
+    client = _get_embed_client()
+
+    def _call():
+        response = client.embeddings.create(
+            model=settings.final_embed_model_name,
+            input=text,
         )
-        response.raise_for_status()
-        data = response.json()
-        return data["data"][0]["embedding"]
+        return response.data[0].embedding
+
+    return await asyncio.to_thread(_call)

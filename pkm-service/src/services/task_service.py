@@ -8,7 +8,7 @@ from storage.markdown_storage import MarkdownStorage
 from models.schemas import Task, TaskCreateRequest
 from models.enums import TaskType
 from models.exceptions import ResourceNotFoundException, TaskExecuteException
-from llm.provider import chat_completion, create_embedding
+from llm.provider import chat_completion, create_embedding, chat_completion_with_images
 from core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -81,18 +81,29 @@ class TaskService:
     async def _process_ocr(self, task: Task) -> Dict[str, Any]:
         logger.info(f"开始处理 OCR 任务: {task.id}")
         content = await self._get_knowledge_content(task.target_id)
-        
+
         if not content:
             return {"message": "未找到内容", "target_id": task.target_id}
-        
-        # 使用 LLM 处理 OCR 内容
+
+        # 从 markdown 内容中提取图片 URL
+        import re
+        image_urls = re.findall(r'!\[.*?\]\((.*?)\)', content)
+
         try:
-            prompt = f"请分析以下内容，提取并整理可能来自图片/OCR的信息：\n\n{content}"
-            ocr_result = await chat_completion(messages=[{"role": "user", "content": prompt}])
-            
+            prompt = "请分析以下内容，提取并整理可能来自图片/OCR的信息："
+            messages = [{"role": "user", "content": prompt}]
+
+            if image_urls:
+                ocr_result = await chat_completion_with_images(
+                    messages=messages,
+                    image_urls=image_urls,
+                )
+            else:
+                ocr_result = await chat_completion(messages=messages)
+
             # 更新知识内容
             await self.storage.update_knowledge(
-                UUID(task.target_id), 
+                UUID(task.target_id),
                 {
                     "content": ocr_result,
                     "source": "OCR",
@@ -100,16 +111,17 @@ class TaskService:
             )
             logger.info(f"OCR 任务完成: {task.id}")
             return {
-                "message": "OCR任务已完成", 
-                "target_id": task.target_id, 
+                "message": "OCR任务已完成",
+                "target_id": task.target_id,
                 "ocr_result": ocr_result,
-                "content_length": len(content)
+                "content_length": len(content),
+                "images_count": len(image_urls),
             }
         except Exception as e:
             logger.error(f"OCR 任务失败: {str(e)}")
             return {
-                "message": "OCR任务处理失败", 
-                "target_id": task.target_id, 
+                "message": "OCR任务处理失败",
+                "target_id": task.target_id,
                 "error": str(e)
             }
 
