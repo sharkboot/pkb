@@ -1,5 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, User, Copy, ThumbsUp, ThumbsDown, MoreHorizontal, Image, Sparkles, FileText, Search } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import {
+  Bot,
+  User,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  MoreHorizontal,
+  Image,
+  Sparkles,
+  FileText,
+  Search,
+  ExternalLink,
+} from 'lucide-react';
+import { Knowledge } from '@/lib/api';
 
 export interface Message {
   id: string;
@@ -9,15 +24,22 @@ export interface Message {
   timestamp: Date;
   liked?: boolean;
   disliked?: boolean;
+  relatedNotes?: Knowledge[];
 }
 
 interface ChatAreaProps {
   messages: Message[];
   onImageUpload?: (images: string[]) => void;
   mode?: 'store' | 'query';
+  onViewNote?: (note: Knowledge) => void;
 }
 
-export default function ChatArea({ messages, onImageUpload, mode = 'store' }: ChatAreaProps) {
+export default function ChatArea({
+  messages,
+  onImageUpload,
+  mode = 'store',
+  onViewNote,
+}: ChatAreaProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +62,6 @@ export default function ChatArea({ messages, onImageUpload, mode = 'store' }: Ch
   };
 
   const handleFeedback = (id: string, type: 'like' | 'dislike') => {
-    // 这里可以添加反馈逻辑
     console.log(`Feedback for message ${id}:`, type);
   };
 
@@ -49,9 +70,11 @@ export default function ChatArea({ messages, onImageUpload, mode = 'store' }: Ch
       {/* 顶部栏 */}
       <div className="h-14 px-6 border-b border-gray-200 flex items-center justify-between bg-white">
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-            mode === 'store' ? 'bg-gray-800' : 'bg-blue-600'
-          }`}>
+          <div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              mode === 'store' ? 'bg-gray-800' : 'bg-blue-600'
+            }`}
+          >
             {mode === 'store' ? (
               <FileText className="w-4 h-4 text-white" />
             ) : (
@@ -76,9 +99,11 @@ export default function ChatArea({ messages, onImageUpload, mode = 'store' }: Ch
       <div className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className={`w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 ${
-              mode === 'store' ? 'text-gray-800' : 'text-blue-600'
-            }`}>
+            <div
+              className={`w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 ${
+                mode === 'store' ? 'text-gray-800' : 'text-blue-600'
+              }`}
+            >
               {mode === 'store' ? (
                 <FileText className="w-10 h-10" />
               ) : (
@@ -141,9 +166,7 @@ export default function ChatArea({ messages, onImageUpload, mode = 'store' }: Ch
                 {/* 头像 */}
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    message.role === 'user'
-                      ? 'bg-gray-800'
-                      : 'bg-gray-200'
+                    message.role === 'user' ? 'bg-gray-800' : 'bg-gray-200'
                   }`}
                 >
                   {message.role === 'user' ? (
@@ -182,13 +205,58 @@ export default function ChatArea({ messages, onImageUpload, mode = 'store' }: Ch
                     className={`px-4 py-3 rounded-2xl ${
                       message.role === 'user'
                         ? 'bg-white text-gray-800 rounded-tr-md shadow-sm'
-                        : 'bg-white text-gray-800 rounded-tl-md shadow-sm'
+                        : 'bg-white text-gray-800 rounded-tl-md shadow-sm max-w-[80%]'
                     }`}
                   >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-800">
-                      {message.content}
-                    </p>
+                    {message.role === 'assistant' ? (
+                      <div className="prose prose-sm max-w-none text-gray-800
+                        prose-p:leading-relaxed prose-p:m-0
+                        prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:p-3 prose-pre:rounded-lg prose-pre:text-xs
+                        prose-code:text-pink-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+                        prose-a:text-blue-600
+                      ">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-800">
+                        {message.content}
+                      </p>
+                    )}
                   </div>
+
+                  {/* 相关笔记卡片 */}
+                  {message.role === 'assistant' && message.relatedNotes && message.relatedNotes.length > 0 && (
+                    <div className="mt-2 w-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-600">相关笔记</span>
+                      </div>
+                      <div className="p-3 space-y-2">
+                        {message.relatedNotes.map((note) => (
+                          <button
+                            key={note.id}
+                            onClick={() => onViewNote?.(note)}
+                            className="w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group flex items-start gap-3"
+                          >
+                            <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm text-gray-800 truncate">
+                                {note.title || '无标题'}
+                              </div>
+                              {note.summary && (
+                                <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                  {note.summary}
+                                </div>
+                              )}
+                            </div>
+                            <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* 操作按钮 */}
                   <div className="flex items-center gap-2">

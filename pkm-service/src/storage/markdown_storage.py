@@ -114,7 +114,14 @@ class MarkdownStorage(BaseStorage):
         try:
             with open(self._catalog_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            return {entry["id"]: CatalogEntry.from_dict(entry) for entry in data}
+            # 支持新旧两种格式：新格式有 entries 字段，旧格式直接是列表
+            if isinstance(data, dict) and "entries" in data:
+                entries = data["entries"]
+            elif isinstance(data, list):
+                entries = data
+            else:
+                return {}
+            return {entry["id"]: CatalogEntry.from_dict(entry) for entry in entries}
         except Exception:
             return {}
 
@@ -162,19 +169,19 @@ class MarkdownStorage(BaseStorage):
 
     async def search_catalog(
         self,
-        keyword: str,
+        keyword: str = "",
         category: Optional[str] = None,
         limit: int = 20
     ) -> List[CatalogEntry]:
-        """搜索目录索引（轻量级粗筛）"""
+        """搜索目录索引，不过滤直接返回全部条目（让模型做筛选）"""
         catalog = self._load_catalog()
         results = []
 
         for entry in catalog.values():
             if category and entry.category != category:
                 continue
-            if entry.match(keyword):
-                results.append(entry)
+            # 跳过 keyword 过滤，让调用方用模型筛选
+            results.append(entry)
 
         results.sort(key=lambda x: x.updated_at, reverse=True)
         return results[:limit]

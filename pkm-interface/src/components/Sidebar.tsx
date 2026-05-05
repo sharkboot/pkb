@@ -17,6 +17,11 @@ import {
 } from 'lucide-react';
 import { listKnowledge, Knowledge } from '@/lib/api';
 
+interface SidebarProps {
+  viewMode: 'chat' | 'notes';
+  onViewModeChange: (mode: 'chat' | 'notes') => void;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -24,7 +29,7 @@ interface Category {
   count: number;
 }
 
-export default function Sidebar() {
+export default function Sidebar({ viewMode, onViewModeChange }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
@@ -151,7 +156,7 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* 笔记列表 */}
+        {/* 最近笔记列表 */}
         <div className="mt-6">
           <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">最近笔记</span>
           {isLoading ? (
@@ -160,17 +165,13 @@ export default function Sidebar() {
             </div>
           ) : (
             <div className="mt-2 space-y-1">
-              {knowledgeItems.map((item) => (
+              {knowledgeItems.slice(0, 10).map((item) => (
                 <button
                   key={item.id}
                   className="w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors group"
                 >
                   <div className="mt-0.5">
-                    {item.summary ? (
-                      <FileText className="w-4 h-4 text-gray-500" />
-                    ) : (
-                      <Image className="w-4 h-4 text-gray-500" />
-                    )}
+                    {getTypeIcon(item.source || 'text')}
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center gap-2">

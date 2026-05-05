@@ -219,5 +219,73 @@ export async function listTasks(): Promise<Task[]> {
   return fetchApi<Task[]>('/ai/tasks');
 }
 
+// 获取目录索引
+export async function getCatalog(params: {
+  keyword?: string;
+  category?: string;
+  limit?: number;
+}): Promise<{ entries: CatalogEntry[] }> {
+  const searchParams = new URLSearchParams();
+  if (params.keyword) searchParams.set('keyword', params.keyword);
+  if (params.category) searchParams.set('category', params.category);
+  if (params.limit) searchParams.set('limit', String(params.limit));
+
+  const query = searchParams.toString();
+  return fetchApi<{ entries: CatalogEntry[] }>(`/knowledge/catalog${query ? `?${query}` : ''}`);
+}
+
+// 重建目录
+export async function rebuildCatalog(): Promise<{ count: number }> {
+  return fetchApi<{ count: number }>('/knowledge/catalog/rebuild', { method: 'POST' });
+}
+
+// 搜索知识（两阶段）
+export async function searchKnowledge(params: {
+  keyword: string;
+  category?: string;
+  useCatalog?: boolean;
+  page?: number;
+  pageSize?: number;
+}): Promise<KnowledgeListResponse & { catalogEntries: CatalogEntry[] }> {
+  const searchParams = new URLSearchParams();
+  searchParams.set('keyword', params.keyword);
+  if (params.category) searchParams.set('category', params.category);
+  if (params.useCatalog !== undefined) searchParams.set('use_catalog', String(params.useCatalog));
+  if (params.page) searchParams.set('page', String(params.page));
+  if (params.pageSize) searchParams.set('page_size', String(params.pageSize));
+
+  return fetchApi<KnowledgeListResponse & { catalogEntries: CatalogEntry[] }>(
+    `/knowledge/search?${searchParams.toString()}`
+  );
+}
+
+// 智能搜索：把用户查询和目录一起给模型，让模型筛选相关条目
+export async function smartSearch(query: string): Promise<SmartSearchResponse> {
+  return fetchApi<SmartSearchResponse>('/knowledge/smart-search', {
+    method: 'POST',
+    body: JSON.stringify({ query }),
+  });
+}
+
+interface SmartSearchResponse {
+  query: string;
+  reason: string;
+  relevantIds: string[];
+  results: Knowledge[];
+  total: number;
+}
+
+interface CatalogEntry {
+  id: string;
+  title: string;
+  summary?: string;
+  contentPreview: string;
+  tags: string[];
+  category?: string;
+  filePath: string;
+  status: string;
+  updatedAt: string;
+}
+
 export { API_BASE_URL };
-export type { Knowledge, Session, Task };
+export type { Knowledge, Session, Task, CatalogEntry };
