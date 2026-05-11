@@ -4,7 +4,7 @@
 
 <!-- PROJECT BADGES -->
 <div align="center">
-  <img src="https://raw.githubusercontent.com/sharkboot/pkb/main/.github/logo.svg" alt="PKB Logo" width="120" height="120" style="margin-bottom: 20px;"/>
+  <img src="https://github.com/sharkboot/pkb/blob/master/.github/logo.svg" alt="PKB Logo" width="120" height="120" style="margin-bottom: 20px;"/>
 
   # PKB - 个人知识管理系统
 
