@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <!-- 渐变背景 -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <!-- 光芒效果 -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景圆 -->
+  <circle cx="100" cy="100" r="90" fill="url(#bgGradient)"/>
+
+  <!-- 外圈装饰 -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.2"/>
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.1"/>
+
+  <!-- 书本主体 -->
+  <g transform="translate(100, 100)" filter="url(#glow)">
+    <!-- 书本底座 -->
+    <path d="M-45,-35 L-35,-30 L-35,30 L-45,35 Z" fill="#ffffff" fill-opacity="0.9"/>
+    <path d="M45,-35 L35,-30 L35,30 L45,35 Z" fill="#ffffff" fill-opacity="0.9"/>
+
+    <!-- 书本中页 -->
+    <path d="M-35,-30 L0,-25 L35,-30 L35,30 L0,25 L-35,30 Z" fill="#ffffff" fill-opacity="0.95"/>
+
+    <!-- 书本中线 -->
+    <line x1="0" y1="-25" x2="0" y2="25" stroke="#6366f1" stroke-width="2"/>
+
+    <!-- 左侧页面文字线 -->
+    <line x1="-28" y1="-15" x2="-5" y2="-12" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+    <line x1="-28" y1="-5" x2="-5" y2="-2" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+    <line x1="-28" y1="5" x2="-5" y2="8" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+    <line x1="-28" y1="15" x2="-5" y2="18" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+
+    <!-- 右侧页面文字线 -->
+    <line x1="5" y1="-12" x2="28" y2="-15" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+    <line x1="5" y1="-2" x2="28" y2="-5" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+    <line x1="5" y1="8" x2="28" y2="5" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+    <line x1="5" y1="18" x2="28" y2="15" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.5"/>
+  </g>
+
+  <!-- AI 标签/星星装饰 -->
+  <g fill="#fbbf24">
+    <!-- 左上星星 -->
+    <polygon points="30,45 33,52 40,52 35,57 37,65 30,60 23,65 25,57 20,52 27,52" fill="#fbbf24"/>
+    <!-- 右上星星 -->
+    <polygon points="170,45 173,52 180,52 175,57 177,65 170,60 163,65 165,57 160,52 167,52" fill="#fbbf24"/>
+    <!-- 底部星星 -->
+    <polygon points="100,170 103,177 110,177 105,182 107,190 100,185 93,190 95,182 90,177 97,177" fill="#fbbf24"/>
+  </g>
+
+  <!-- 知识流动线条 -->
+  <g stroke="#ffffff" stroke-width="2" fill="none" stroke-opacity="0.4">
+    <path d="M50,100 Q70,80 100,85 Q130,80 150,100">
+      <animate attributeName="stroke-opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M50,100 Q70,120 100,115 Q130,120 150,100">
+      <animate attributeName="stroke-opacity" values="0.6;0.2;0.6" dur="2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>
