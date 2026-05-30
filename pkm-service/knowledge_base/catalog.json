@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "1f147ce6-a9cc-6c66-96e6-6648545a65df",
+      "title": "知识记录 2026-05-04 23:32",
+      "summary": "## Daily总结：注意力机制内存占用对比\n\n四种注意力机制KV缓存对比：MHA内存占用最高；MQA通过共享K/V减少约h倍；GQA分组共享K/V，减少h/G倍；MLA存储低维潜在表示（如d_c=512 vs d=4096），内存效率最优。MLA适合显存有限的长上下文场景（如上百K tokens）。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAwQAAAGDCAIAAAAas0D8AAAQAElEQVR4AeydB3xVxbPH/xQpCaGDlNBC7wQvUYoiiHRUVFSagHSlWbGhKPZKlS4iCCogonSxINVwk0hHSAKKFKWFFoqU901G9i3n3Hty700CQfb/mbdvz+",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f147ce6-a9cc-6c66-96e6-6648545a65df.md",
+      "status": "draft",
+      "created_at": "2026-05-04T23:32:10.269194",
+      "updated_at": "2026-05-04T23:32:19.296422"
+    },
+    {
+      "id": "1f147ced-e2d8-62f3-88b5-f7bdea065032",
+      "title": "知识记录 2026-05-04 23:35",
+      "summary": "MLA通过低维潜在向量压缩KV信息，大幅降低KV缓存和显存占用，为长序列和大模型推理提供高效方案。相比MHA、MQA、GQA等传统注意力机制，MLA代表未来趋势，但目前实现复杂、生态支持有限，仍处于发展早期阶段。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvAAAAEECAIAAADBL5e/AAAQAElEQVR4AezdCZxdRbEwcAHfMwQEAvjJYthFAghMnESMLILsgogsshghELZHCLuAPDSKirKvj1UBg6CyI4ogssaoyZ2MKBDUTEB2ZUlYAsGn8P0zZfo159",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f147ced-e2d8-62f3-88b5-f7bdea065032.md",
+      "status": "draft",
+      "created_at": "2026-05-04T23:35:24.155569",
+      "updated_at": "2026-05-04T23:35:33.714679"
+    },
+    {
+      "id": "1f1485c6-dc37-6a21-8beb-287b559b442b",
+      "title": "知识记录 2026-05-05 16:28",
+      "summary": "多头注意力机制（MHA）通过并行多个注意力头捕捉序列依赖，表达能力强但计算成本高。分组查询注意力（GQA）将查询头分组共享键值头，平衡速度与精度。潜在注意力（MLA）引入低维潜在空间，压缩信息表示，提升效率和泛化能力。三者分别适用于不同规模的任务场景。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA2sAAB2ACAIAAAActZsVAAAQAElEQVR4AezdCYBdRZU38He7k05nIQtb2JewQxQ0iIqyKKKggiCLCwgqiriA4IYRUdRBxNERERVwGUDQcQBRUVERZ0SHb3TAcUEcFAEVZBHBgIGs/b7f6x",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f1485c6-dc37-6a21-8beb-287b559b442b.md",
+      "status": "draft",
+      "created_at": "2026-05-05T16:28:44.090946",
+      "updated_at": "2026-05-05T16:29:28.026960"
+    },
+    {
+      "id": "1f14ae02-2adc-689c-a115-0b0e80027e18",
+      "title": "知识记录 2026-05-08 21:16",
+      "summary": "斯坦福与谷歌2023年发布\"生成式代理\"研究，在虚拟小镇模拟25个AI居民生活。通过记忆流、检索、反思、规划三大支柱，使AI具备回忆、推理、计划能力，展现接近人类的复杂行为。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA5EAAAJpCAIAAAC7BiEoAAAQAElEQVR4AeydB2AVRdeGZ3bvvemNNEgIJfTeexcQERVFUOy9IPby2f5PERXs+tm7IFYsiKJipSug9Ca995KQnnvv7vzP3k1CqCKCgs56Mpk5c+acM+/uzb",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f14ae02-2adc-689c-a115-0b0e80027e18.md",
+      "status": "draft",
+      "created_at": "2026-05-08T21:16:34.014018",
+      "updated_at": "2026-05-08T21:16:48.926976"
+    },
+    {
+      "id": "1f14aeac-528d-66dc-99e1-8020225076a3",
+      "title": "知识记录 2026-05-08 22:32",
+      "summary": "RAG优化从检索、索引、生成三层面入手：混合检索+两阶段精排、查询改写；语义分块+元数据/GraphRAG；Prompt设计+事实校验+后处理；系统调参、缓存与评估，实现精准检索与可靠生成。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA4kAAA6OCAYAAADM/DYtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAP+lSURBVHhe7P0LgFfFffePf3ANGu2vtvXJRUhrlmtMQoGIVzCx3g",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f14aeac-528d-66dc-99e1-8020225076a3.md",
+      "status": "draft",
+      "created_at": "2026-05-08T22:32:41.578671",
+      "updated_at": "2026-05-08T22:33:14.562017"
+    },
+    {
+      "id": "1f14bba0-0630-60e2-a66d-407bb8fc510a",
+      "title": "知识记录 2026-05-09 23:16",
+      "summary": "大模型推理显存≈2L GB（半精度），全参数训练≈8L GB（半精度）。PEFT（如LoRA）显存需求最低；DPO需额外参考模型；PPO需策略、参考、奖励三模型，约12L+；GRPO省去critic，约10L+。选择合适方法可大幅降低显存占用。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA5UAABARCAYAAAAqvxROAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAP+lSURBVHhe7P19lB1Het4JvgUSH4SAQqNkiEC1p0uoglVCAyBQTf",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f14bba0-0630-60e2-a66d-407bb8fc510a.md",
+      "status": "draft",
+      "created_at": "2026-05-09T23:16:06.768457",
+      "updated_at": "2026-05-09T23:17:35.149337"
+    },
+    {
+      "id": "1f14e135-87a0-64d3-9dba-284a49535229",
+      "title": "知识记录 2026-05-12 23:00",
+      "summary": "多模态融合分为早期、晚期、深度和混合四种策略。Q-Former通过可学习查询向量实现图像与语言的高效对齐，核心在于交叉注意力让不同模态\"对话\"而非简单拼接。实战建议混合表示学习与多层特征提取，通过模型剪枝和量化控制计算开销。选对融合策略比堆叠编码器更重要。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA3wAAAgACAYAAAB98zFiAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAP+lSURBVHhe7L0LnBbFme//IIqJng25nHVXJmeTGW65eYSISZSJmy",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f14e135-87a0-64d3-9dba-284a49535229.md",
+      "status": "draft",
+      "created_at": "2026-05-12T23:00:42.093281",
+      "updated_at": "2026-05-12T23:01:05.024792"
+    },
+    {
+      "id": "1f14fa4e-5c23-69a2-b738-0e8502689309",
+      "title": "知识记录 2026-05-14 22:55",
+      "summary": "Transformer由编码器和解码器组成。编码器负责构建输入语义表示以理解内容，解码器利用语义表示和前序输出生成目标序列。三种架构各有适用场景：纯编码器模型适用于分类、命名实体识别等理解任务；纯解码器模型适用于文本生成；编码器-解码器模型适用于翻译、摘要等任务。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAx4AAAMjCAIAAACkvFEaAAAQAElEQVR4AezdC9z91Zj//zv5OYQc0khIUQbJODSFQkmRiIxDv9I4H0MOMQ6D+g8zfjSGRuN8muiXw4xjIlOEHIuQc9IwhQadpFJ9+z/rGuv38dn73vd97+",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f14fa4e-5c23-69a2-b738-0e8502689309.md",
+      "status": "draft",
+      "created_at": "2026-05-14T22:55:07.313808",
+      "updated_at": "2026-05-14T22:55:21.750845"
+    },
+    {
+      "id": "1f14fa4f-3900-65d1-9e8f-c78f0aad989a",
+      "title": "知识记录 2026-05-14 22:55",
+      "summary": "Transformer采用编码器-解码器架构，最初用于翻译任务。编码器处理源语言，解码器通过掩码注意力机制依次生成目标词，结合多头注意力捕捉多维特征，配合残差连接、归一化和前馈网络实现高效训练，成为NLP领域的重要基础模型。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAApEAAAMoCAIAAAAY+yyVAAAQAElEQVR4Aezde6ztV1k3+oY33uIFERVFJbS2eL9BYySN1wpYm1M9xluqiAqxSqP1Ui/hRGvVg7caLaZgFVBsaJA/FPumFAoVUStBoQGCStqmRZHKJQQBEz",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f14fa4f-3900-65d1-9e8f-c78f0aad989a.md",
+      "status": "draft",
+      "created_at": "2026-05-14T22:55:30.472904",
+      "updated_at": "2026-05-14T22:55:49.239166"
+    },
+    {
+      "id": "1f14fa92-ba18-6d72-83fe-45d06cecf3ab",
+      "title": "npm install -g @anthropic-ai/claude-code",
+      "summary": "这是Anthropic公司的Claude Code命令行工具的全局安装命令，用于通过npm在系统中安装Claude AI编程助手。安装后可在终端直接调用claude命令与Claude进行交互。",
+      "content_preview": "npm install -g @anthropic-ai/claude-code",
+      "tags": [
+        "text"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f14fa92-ba18-6d72-83fe-45d06cecf3ab.md",
+      "status": "draft",
+      "created_at": "2026-05-14T23:25:42.527115",
+      "updated_at": "2026-05-14T23:25:45.932204"
+    },
+    {
+      "id": "1f151f31-0be0-6766-bec6-ff7cdb0c848f",
+      "title": "???:??? Pytorch ??",
+      "summary": null,
+      "content_preview": "?????,????? Model ?? Tokenizers ?,???????????????????\n\nTransformers ???? Pytorch ????(Tensorflow ?????????),???????? Transformers ??????? Pytorch ??,????????????? Pytorch ? DataLoader ????????? Pytorc",
+      "tags": [
+        "Pytorch",
+        "????",
+        "Transformers",
+        "????"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\permanent_notes\\1f151f31-0be0-6766-bec6-ff7cdb0c848f.md",
+      "status": "active",
+      "created_at": "2026-05-17T14:19:42.498800",
+      "updated_at": "2026-05-17T14:19:42.498800"
+    },
+    {
+      "id": "1f151f3b-ba58-619d-94ad-5aa031448fb9",
+      "title": "第六章：必要的 Pytorch 知识",
+      "summary": null,
+      "content_preview": "在上一章中，我们介绍了 Model 类和 Tokenizers 类，尤其是如何运用分词器对文本进行预处理。\n\nTransformers 库建立在 Pytorch 框架之上（Tensorflow 的版本功能并不完善），虽然官方宣称使用 Transformers 库并不需要掌握 Pytorch 知识，但是实际上我们还是需要通过 Pytorch 的 DataLoader 类来加载数据、使用 Pytorc",
+      "tags": [
+        "Pytorch",
+        "深度学习",
+        "Transformers",
+        "机器学习"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\permanent_notes\\1f151f3b-ba58-619d-94ad-5aa031448fb9.md",
+      "status": "active",
+      "created_at": "2026-05-17T21:24:29.228482",
+      "updated_at": "2026-05-17T21:24:29.228482"
+    },
+    {
+      "id": "1f151f42-353f-6577-9c2a-665c7658c0f9",
+      "title": "第六章：必要的 Pytorch 知识",
+      "summary": null,
+      "content_preview": "第六章：必要的 Pytorch 知识\n\n在上一章中，我们介绍了 Model 类和 Tokenizers 类，尤其是如何运用分词器对文本进行预处理。\n\nTransformers 库建立在 Pytorch 框架之上（Tensorflow 的版本功能并不完善），虽然官方宣称使用 Transformers 库并不需要掌握  Pytorch 知识，但是实际上我们还是需要通过 Pytorch 的 DataLo",
+      "tags": [
+        "Pytorch",
+        "深度学习",
+        "Transformers",
+        "机器学习"
+      ],
+      "category": "技术学习",
+      "file_path": "./knowledge_base\\permanent_notes\\1f151f42-353f-6577-9c2a-665c7658c0f9.md",
+      "status": "active",
+      "created_at": "2026-05-17T21:27:23.177099",
+      "updated_at": "2026-05-17T21:27:25.254477"
+    },
+    {
+      "id": "1f154596-2578-6c9e-8c50-f13529d7461e",
+      "title": "知识记录 2026-05-20 22:37",
+      "summary": null,
+      "content_preview": "\n## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgkAAANtCAIAAACVEn9XAAAQAElEQVR4AezdB5zWxbU3cCnSlt6rVAGpCoKCoGIlYom9t1hjvXqjUaNRryZ61Wissb5qNGqsERUVUVQUFASkSu9NqpSlL7xfmPi/T3aXFZYF9lnm+ZyMZ",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f154596-2578-6c9e-8c50-f13529d7461e.md",
+      "status": "draft",
+      "created_at": "2026-05-20T22:37:10.392335",
+      "updated_at": "2026-05-20T22:37:10.392335"
+    },
+    {
+      "id": "1f1545a9-f8f2-6275-948e-cd2d1a9d2e76",
+      "title": "知识记录 2026-05-20 22:46",
+      "summary": "OpenClaw是一个分布式聊天机器人系统，采用Gateway-Node-Channel三层架构，通过WebSocket通信。Gateway作为中央控制平面，Node负责设备端执行，Channel支持20多种即时通讯平台。该系统采用Loopback-First安全设计，默认仅绑定本地端口，安全性高，并支持长驻运行以保持对话上下文。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgkAAANtCAIAAACVEn9XAAAQAElEQVR4AezdB5zWxbU3cCnSlt6rVAGpCoKCoGIlYom9t1hjvXqjUaNRryZ61Wissb5qNGqsERUVUVQUFASkSu9NqpSlL7xfmPi/T3aXFZYF9lnm+ZyMZ8",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f1545a9-f8f2-6275-948e-cd2d1a9d2e76.md",
+      "status": "draft",
+      "created_at": "2026-05-20T22:46:02.594366",
+      "updated_at": "2026-05-20T22:46:15.767251"
+    },
+    {
+      "id": "1f1545ac-a10d-6899-81aa-48cae24d6dc5",
+      "title": "知识记录 2026-05-20 22:47",
+      "summary": "OpenClaw的记忆系统包含四层架构：SOUL（不可变内核，永久保存身份定义）、TOOLS（动态工具，按需加载）、USER（长期记忆，存储用户偏好和决策）、SESSION（即时消息，会话级上下文）。配合Daily Logs日志系统和HENRY.ini持久化文件，在token阈值触发时自动压缩保存，确保关键信息跨会话持久保留，解决传统Chatbot会话结束后上下文消失的问题。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYYAAAMbCAIAAADGhaUGAAAQAElEQVR4AezdCZyVxZU2cFkbaPZ93wVkXwQERUFwxUhco0ajDm7B3VFHE40mmmjU0VGj0aifa1xQUYwaVHDDAIKAICAosiM7yNINDd3w/emKd+40oEjfbr",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f1545ac-a10d-6899-81aa-48cae24d6dc5.md",
+      "status": "draft",
+      "created_at": "2026-05-20T22:47:13.908751",
+      "updated_at": "2026-05-20T22:47:25.013746"
+    },
+    {
+      "id": "1f1545ad-47e1-643b-be85-ecd35e62f725",
+      "title": "知识记录 2026-05-20 22:47",
+      "summary": "每个Agent在文件系统拥有独立工作区，所有配置、记忆、技能以纯文本文件存储。核心文件包括：AGENTS.md定义Agent身份和行为、USER.md规定人机关系、MEMORY.md记录用户个性化信息、HEARTBEAT.md存储长期记忆、memory/目录存放每日日志、skills/目录包含工作区技能。配置文件均为Markdown或JSON，可直接用文本编辑器修改，体现\"一切皆文本\"的设计理念。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYEAAANzCAIAAADA/jNIAAAQAElEQVR4AeydCVyV1fb3U5CjICgKiqKiOOGsqDjkRKKSejFxSE1Lr5aFQ9mtrnUbLc2yf75pWpZeLb1aWpZjWhoYhorzPM+gqCiKgYCA7xd2Pp0OgwznHM",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f1545ad-47e1-643b-be85-ecd35e62f725.md",
+      "status": "draft",
+      "created_at": "2026-05-20T22:47:31.401836",
+      "updated_at": "2026-05-20T22:47:43.970817"
+    },
+    {
+      "id": "1f1574f4-502b-614f-a440-f81d5a7e95f9",
+      "title": "知识记录 2026-05-24 17:02",
+      "summary": "层级监督模式中，项目经理Agent协调程序员与测试员执行任务。主流开发框架包括：LangGraph（图形化流程，适合复杂生产环境）、AutoGen（对话协作，适合代码生成）、Coze/Dify（低代码，适合非技术人员）。核心原理是“感知-规划-行动”与“分工-协作”。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA1kAAAl2CAIAAAAg6YvJAAAQAElEQVR4AeydB4AUtffHk9m9TlcUC4hYwQoi9t57wV5R7CLqz65/FXvB3jsqdsWGXSyIguIBIgiIdGkq7YC72zr5fzK5G4a9wgG7e3CX9V02eXlJXr55eX",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f1574f4-502b-614f-a440-f81d5a7e95f9.md",
+      "status": "draft",
+      "created_at": "2026-05-24T17:02:19.702829",
+      "updated_at": "2026-05-24T17:02:36.410303"
+    },
+    {
+      "id": "1f1574f8-73ca-6eac-aa8b-bb73afb526cc",
+      "title": "知识记录 2026-05-24 17:04",
+      "summary": "这篇内容讲解了AI Agent的核心架构。LLM存在无手、静止知识、健忘三大局限，Agent通过LLM+规划+记忆+工具的组合突破这些边界。Agent架构包括目标、规划、记忆、工具、环境等核心组件，LLM从生成器转变为控制器，记忆分短期的Context Window和长期的RAG+向量库，实现人机交互从人适应机器到机器适应人的转变。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA2IAAA43CAIAAACxWRVBAAAQAElEQVR4AeydBWCWVRfHtwEyQhgdSncLo7tRulEapZSQ7i6lFEGUkA6RlJZUAQFpBJFmoB+hxEbn9v22C3eX5w3eJRscPV7Pc+659b917rnv88wjQP4RBA",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f1574f8-73ca-6eac-aa8b-bb73afb526cc.md",
+      "status": "draft",
+      "created_at": "2026-05-24T17:04:10.812996",
+      "updated_at": "2026-05-24T17:04:34.035584"
+    }
+  ]
+}
