@@ -275,6 +275,20 @@
       "status": "draft",
       "created_at": "2026-05-24T17:04:10.812996",
       "updated_at": "2026-05-24T17:04:34.035584"
+    },
+    {
+      "id": "1f15cfb0-e617-69bf-9e5b-e8c2f451bfb9",
+      "title": "知识记录 2026-05-31 22:14",
+      "summary": "OpenClaw的Skill是能力扩展单元，采用三层优先级管理（项目级、用户级、内置）。加载过程读取元数据、应用环境变量并构建系统提示词，高优先级覆盖低优先级，实现灵活的能力集成。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfwAAAKSCAIAAAC4Jv7zAAAQAElEQVR4AezdC7zXQ/oHcNRWSlGE5FKKbogoolSbe0RZVkiIWLls1n3d74sVUlvRukWIIkoRRVSKSIWQ7kqlVLrR5f8+zfr+f37ndDqdc7qc05zX85//M8",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15cfb0-e617-69bf-9e5b-e8c2f451bfb9.md",
+      "status": "draft",
+      "created_at": "2026-05-31T22:14:37.301190",
+      "updated_at": "2026-05-31T22:14:52.651894"
     }
   ]
 }
