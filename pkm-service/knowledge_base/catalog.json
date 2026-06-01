@@ -289,6 +289,118 @@
       "status": "draft",
       "created_at": "2026-05-31T22:14:37.301190",
       "updated_at": "2026-05-31T22:14:52.651894"
+    },
+    {
+      "id": "1f15db54-0321-608d-855b-0434213d1192",
+      "title": "知识记录 2026-06-01 20:27",
+      "summary": "OpenClaw的记忆系统是其核心能力，通过四层架构实现上下文连续性：从不可变的SOUL身份内核，到动态的TOOLS工具，再到存储用户长期记忆的USER层，最后是实时会话的Session层。系统还通过每日日志记录交互，为对话提供连续性。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAusAAAMrCAIAAAB/BEtqAAAQAElEQVR4AeydB3xVVdbFkdBbaIFA6CAovSsgCoiAojiKqCAWBhUGUUdRBh0ddXCUD9vYEFEGUQawIIqACAgiSAelF+m9917C9082nLm+9xKSl4T3kqz8to",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db54-0321-608d-855b-0434213d1192.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:27:27.268263",
+      "updated_at": "2026-06-01T20:27:44.990853"
+    },
+    {
+      "id": "1f15db54-9e6b-647b-9b4f-8f47e18c7cd3",
+      "title": "知识记录 2026-06-01 20:27",
+      "summary": "OpenClaw 系统通过 MEMORY.md 文件实现跨会话持久记忆。当会话接近 token 上限时，系统自动静默保存重要信息并压缩上下文，确保关键记忆不随对话滑动丢失，区别于普通对话会话的临时性。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvgAAALuCAIAAABUz/UyAAAQAElEQVR4AezdCZyf09k//tojsVRaqSAVS0VssaaWpCI0iOKxL7XlIfjb+qLl4flRlKIUT2y11tpQ+75HpLFGrBH7loqlQTRUCEn93+bi7u37nZnMJDOTmc",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db54-9e6b-647b-9b4f-8f47e18c7cd3.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:27:43.551602",
+      "updated_at": "2026-06-01T20:27:59.223834"
+    },
+    {
+      "id": "1f15db55-1de8-6ceb-9a79-0d1df6160405",
+      "title": "知识记录 2026-06-01 20:27",
+      "summary": "OpenClaw 的向量记忆搜索结合 Embedding 语义检索和 BM25 关键词匹配，使用 SQLite-vec 存储，提供 memory_search 和 memory_get 工具，实现模糊联想与精准定位。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtcAAAGpCAIAAADJLI0mAAAQAElEQVR4AezdB7zW1ZE//sQSFSxrQQUl2NYGYhTsugjYFY29l8RYVo3+jGU1q6uuSXRt+VtirLERxR5rLNhiwUKsWDAaJRYMGo0aiD3/t0w8+fo89z5c4F",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db55-1de8-6ceb-9a79-0d1df6160405.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:27:56.919933",
+      "updated_at": "2026-06-01T20:28:20.606565"
+    },
+    {
+      "id": "1f15db55-c18e-6192-bd82-c0fb087419b3",
+      "title": "知识记录 2026-06-01 20:28",
+      "summary": "OpenClaw通过DM配对、白名单和群组规则识别用户身份。其中DM配对为核心安全机制：Agent会向陌生发送者生成配对码，需经主人批准后才处理消息，以此隔离上下文并防止滥用。关闭此功能将导致安全风险。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAt8AAAJKCAIAAAB7w75jAAAQAElEQVR4Aey9B3xVVdb/DQQIEGnB0Kv03hHpHaQpIAqIAoMggwgPirw4j/zFB2ZwYIRR0UEREWEQKQIqCEjv0nvvoffQQwnvN1mw3Zx7c3OT3EC4Wfeznv",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db55-c18e-6192-bd82-c0fb087419b3.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:28:14.079425",
+      "updated_at": "2026-06-01T20:28:28.218923"
+    },
+    {
+      "id": "1f15db56-26fb-651c-a5f8-5320a4489689",
+      "title": "知识记录 2026-06-01 20:28",
+      "summary": "Agent配置支持白名单机制，允许特定平台用户（如Telegram、WhatsApp、Discord）直接对话，跳过配对。群聊中默认只响应@提及的消息，可切换为始终响应模式以提高互动，但token消耗较高。通过命令`/activation mention|always`可动态调整行为。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtEAAAJQCAIAAADHR68tAAAQAElEQVR4AeydCbxO1frH7zEdnMwdl8ykTMk8JmS8ElHchItrKqI0KqU0SCFFFHLREWXKnHnIlDHzkDFDhMzHdND/e86T3f6/57yvMznj7/08rZ79rGevvd",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db56-26fb-651c-a5f8-5320a4489689.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:28:24.714780",
+      "updated_at": "2026-06-01T20:28:44.190206"
+    },
+    {
+      "id": "1f15db56-766a-6f94-83fb-570f494d4aa7",
+      "title": "知识记录 2026-06-01 20:28",
+      "summary": "该设计将私聊、群组和跨渠道场景进行会话隔离管理。私聊合并到共享的main session并加载记忆，实现用户记忆连续性；群组使用独立session且不加载记忆，防止隐私泄露；跨渠道私聊共享session保持体验一致。核心原则是私聊作为私密空间积累记忆，群组作为公共场合保持隔离，兼顾隐私保护与使用体验。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAt4AAAFcCAIAAABwZi5GAAAQAElEQVR4AezdCdzXU/YHcBRRQlGWGAx/S5bGki1JUShJ1pAJ2ZesmezrYGQZW9asIVIhhUg12aNsRRShbBGFZIn/uy7f+c7vWTzV01M9ned15ut8zz33fu",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db56-766a-6f94-83fb-570f494d4aa7.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:28:33.044264",
+      "updated_at": "2026-06-01T20:28:49.282595"
+    },
+    {
+      "id": "1f15db57-127d-6724-a2a2-13989c9c94d8",
+      "title": "知识记录 2026-06-01 20:28",
+      "summary": "OpenClaw是一个以Unix哲学为核心的极简AI Agent框架，主张用最少工具做最多事。它强调命令行接口作为通用交互方式，仅提供读、写、编辑和执行四个基础工具，追求高效、轻量、可组合的系统设计。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtgAAAJPCAIAAADJ0jSpAAAQAElEQVR4AezdCbzXc/Y/8DaiFEURNUURWbJlzdhDdrIzlmxj/dlmGMww1hm7wVgHw5B9iVSIrBGFhFKUIkIpSiX8n7c3n//H93vv7da91a177uPM2/mc93",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db57-127d-6724-a2a2-13989c9c94d8.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:28:49.409616",
+      "updated_at": "2026-06-01T20:29:07.550282"
+    },
+    {
+      "id": "1f15db57-83fb-696b-aa0e-1f8010acd427",
+      "title": "知识记录 2026-06-01 20:29",
+      "summary": "OpenClaw框架反对其它AI框架内置MCP协议的做法，认为MCP无法规模化。它转而推崇CLI和Unix哲学，主张AI Agent通过直接执行Bash命令来扩展能力，仅在必要时通过mcporter工具桥接MCP，以保持系统的简洁与可靠性。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAs8AAAHVCAIAAACBtYGAAAAQAElEQVR4AezdB5yWxdU/fIoFwR4bCgoWEKzYC8aOxkZi10jUxxrrExN9MX99NGqiscYaY4k19hJrFLEQaxQ7KqKoCIqiooAiCMj7ZSeMl/e9u9zsLrC7nP",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db57-83fb-696b-aa0e-1f8010acd427.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:29:01.310193",
+      "updated_at": "2026-06-01T20:29:21.139149"
     }
   ]
 }
