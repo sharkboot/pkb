@@ -401,6 +401,34 @@
       "status": "draft",
       "created_at": "2026-06-01T20:29:01.310193",
       "updated_at": "2026-06-01T20:29:21.139149"
+    },
+    {
+      "id": "1f15db83-6c80-6633-a572-420ec881fae5",
+      "title": "知识记录 2026-06-01 20:48",
+      "summary": null,
+      "content_preview": "\n## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjYAAAMrCAIAAADV60+TAAAQAElEQVR4AezdC7zXQ/4/cNRWOipFbqEiSkVEEaXarLsomxUSoqzIZuW27rm0WC2pVfRzixBFlCLKRqWIVAgpKqVSKt3o8n/W8Pl/93tOR51O+p7OfB/vn",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db83-6c80-6633-a572-420ec881fae5.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:48:39.963510",
+      "updated_at": "2026-06-01T20:48:39.963510"
+    },
+    {
+      "id": "1f15db96-4a9c-6c24-8cd5-1c30c28dae65",
+      "title": "知识记录 2026-06-01 20:57",
+      "summary": "OpenClaw的Skills是其能力扩展单元，通过三层优先级管理：项目级最高、用户级中等、内置级最低。加载时系统扫描目录读取元数据，注入环境变量，构建系统提示词，并在执行后恢复状态，以实现模块化、灵活配置和安全隔离。",
+      "content_preview": "## 图片\n![图片](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjYAAAMrCAIAAADV60+TAAAQAElEQVR4AezdC7zXQ/4/cNRWOipFbqEiSkVEEaXarLsomxUSoqzIZuW27rm0WC2pVfRzixBFlCLKRqWIVAgpKqVSKt3o8n/W8Pl/93tOR51O+p7OfB/vnX",
+      "tags": [
+        "screenshot"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f15db96-4a9c-6c24-8cd5-1c30c28dae65.md",
+      "status": "draft",
+      "created_at": "2026-06-01T20:57:06.437840",
+      "updated_at": "2026-06-01T20:57:50.982207"
     }
   ]
 }
