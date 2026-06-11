@@ -5,7 +5,7 @@ import InputArea from './components/InputArea';
 import NotesList from './components/NotesList';
 import NoteModal from './components/NoteModal';
 import { Moon, Sun, Menu, FileText, Search, BookOpen } from 'lucide-react';
-import { collectContent, smartSearch, Knowledge } from './lib/api';
+import { collectContent, smartSearch, importMarkdownFile, Knowledge } from './lib/api';
 
 type ViewMode = 'chat' | 'notes';
 type Mode = 'store' | 'query';
@@ -90,6 +90,40 @@ function App() {
       setIsLoading(false);
     }
   }, [mode]);
+
+  const handleImportMarkdown = useCallback(async (file: File) => {
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: `导入 Markdown 文件: ${file.name}`,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const result = await importMarkdownFile(file);
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: result.summary || `已成功导入「${result.title}」到知识库，AI 正在后台生成摘要和标签...`,
+        timestamp: new Date(),
+        relatedNotes: [result],
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Import Error:', error);
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: error instanceof Error ? error.message : '导入失败，请稍后重试',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleViewNote = useCallback((note: Knowledge) => {
     setSelectedNote(note);
@@ -275,7 +309,7 @@ function App() {
               mode={mode}
               onViewNote={handleViewNote}
             />
-            <InputArea onSend={handleSend} mode={mode} disabled={isLoading} />
+            <InputArea onSend={handleSend} onImportMarkdown={handleImportMarkdown} mode={mode} disabled={isLoading} />
           </>
         ) : (
           <NotesList onViewNote={handleViewNote} />

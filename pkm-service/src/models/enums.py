@@ -8,6 +8,7 @@ class SourceType(str, Enum):
     IMAGE = "image"
     MANUAL = "manual"
     AGENT = "agent"
+    IMPORT = "import"
 
 class KnowledgeStatus(str, Enum):
     DRAFT = "draft"

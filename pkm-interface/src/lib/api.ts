@@ -156,6 +156,25 @@ export async function uploadImage(
   return result.data;
 }
 
+// 导入 Markdown 文件
+export async function importMarkdownFile(
+  file: File
+): Promise<Knowledge> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/files/import/markdown`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const result: BaseResponse<Knowledge> = await response.json();
+  if (result.code !== 0) {
+    throw new Error(result.message || 'Import failed');
+  }
+  return result.data;
+}
+
 // 会话相关
 export interface Session {
   id: string;

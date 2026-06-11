@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   Search,
   Plus,
@@ -20,6 +20,7 @@ import { listKnowledge, Knowledge } from '@/lib/api';
 interface SidebarProps {
   viewMode: 'chat' | 'notes';
   onViewModeChange: (mode: 'chat' | 'notes') => void;
+  onOpenCreateNote: () => void;
 }
 
 interface Category {
@@ -29,14 +30,13 @@ interface Category {
   count: number;
 }
 
-export default function Sidebar({ viewMode, onViewModeChange }: SidebarProps) {
+export default function Sidebar({ viewMode, onViewModeChange, onOpenCreateNote }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
   const [knowledgeItems, setKnowledgeItems] = useState<Knowledge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 加载知识列表
   useEffect(() => {
     loadKnowledge();
   }, []);
@@ -89,7 +89,6 @@ export default function Sidebar({ viewMode, onViewModeChange }: SidebarProps) {
 
   return (
     <div className="w-72 h-full bg-white border-r border-gray-200 flex flex-col">
-      {/* 顶部 Logo 区域 */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-gray-800 flex items-center justify-center">
@@ -101,7 +100,6 @@ export default function Sidebar({ viewMode, onViewModeChange }: SidebarProps) {
           </div>
         </div>
 
-        {/* 搜索框 */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -114,15 +112,16 @@ export default function Sidebar({ viewMode, onViewModeChange }: SidebarProps) {
         </div>
       </div>
 
-      {/* 新建按钮 */}
       <div className="p-3">
-        <button className="w-full py-2.5 px-4 bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors">
+        <button
+          onClick={onOpenCreateNote}
+          className="w-full py-2.5 px-4 bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors"
+        >
           <Plus className="w-4 h-4" />
           新建笔记
         </button>
       </div>
 
-      {/* 分类列表 */}
       <div className="flex-1 overflow-y-auto px-3">
         <div
           className="flex items-center justify-between py-2 cursor-pointer select-none"
@@ -156,7 +155,6 @@ export default function Sidebar({ viewMode, onViewModeChange }: SidebarProps) {
           </div>
         )}
 
-        {/* 最近笔记列表 */}
         <div className="mt-6">
           <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">最近笔记</span>
           {isLoading ? (
@@ -190,7 +188,6 @@ export default function Sidebar({ viewMode, onViewModeChange }: SidebarProps) {
         </div>
       </div>
 
-      {/* 底部设置 */}
       <div className="p-3 border-t border-gray-200">
         <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors">
           <Settings className="w-4 h-4" />

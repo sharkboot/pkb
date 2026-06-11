@@ -1,20 +1,23 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Send, Image, X, Loader2 } from 'lucide-react';
+import { Send, Image, X, Loader2, FileText } from 'lucide-react';
 
 interface InputAreaProps {
   onSend: (content: string, images: string[]) => void;
+  onImportMarkdown?: (file: File) => Promise<void>;
   disabled?: boolean;
   mode?: 'store' | 'query';
 }
 
-export default function InputArea({ onSend, disabled, mode = 'store' }: InputAreaProps) {
+export default function InputArea({ onSend, onImportMarkdown, disabled, mode = 'store' }: InputAreaProps) {
   const [input, setInput] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [importingMd, setImportingMd] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const markdownInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -34,6 +37,16 @@ export default function InputArea({ onSend, disabled, mode = 'store' }: InputAre
         };
         reader.readAsDataURL(file);
       });
+  };
+
+  const handleMarkdownImport = async (file: File) => {
+    if (!onImportMarkdown) return;
+    setImportingMd(true);
+    try {
+      await onImportMarkdown(file);
+    } finally {
+      setImportingMd(false);
+    }
   };
 
   // 处理 Ctrl+V 粘贴
@@ -106,7 +119,15 @@ export default function InputArea({ onSend, disabled, mode = 'store' }: InputAre
           onDrop={(e) => {
             e.preventDefault();
             setIsDragging(false);
-            processFiles(Array.from(e.dataTransfer.files));
+            const droppedFiles = Array.from(e.dataTransfer.files);
+            // 分离 markdown 文件和图片
+            const mdFiles = droppedFiles.filter(f => f.name.endsWith('.md'));
+            const imageFiles = droppedFiles.filter(f => f.type.startsWith('image/'));
+
+            if (imageFiles.length > 0) processFiles(imageFiles);
+            if (mdFiles.length > 0 && onImportMarkdown) {
+              handleMarkdownImport(mdFiles[0]); // 导入第一个 .md 文件
+            }
           }}
           onDragOver={(e) => {
             e.preventDefault();
@@ -144,6 +165,31 @@ export default function InputArea({ onSend, disabled, mode = 'store' }: InputAre
                 className="hidden"
                 onChange={(e) => {
                   if (e.target.files) processFiles(Array.from(e.target.files));
+                }}
+              />
+              <button
+                onClick={() => markdownInputRef.current?.click()}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="导入 Markdown 文件"
+                disabled={importingMd}
+              >
+                {importingMd ? (
+                  <Loader2 className="w-5 h-5 text-gray-500 animate-spin" />
+                ) : (
+                  <FileText className="w-5 h-5 text-gray-500" />
+                )}
+              </button>
+              <input
+                ref={markdownInputRef}
+                type="file"
+                accept=".md"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleMarkdownImport(file);
+                    e.target.value = ''; // 重置以便可以重新导入同一文件
+                  }
                 }}
               />
               <span className="text-xs text-gray-400">支持 Ctrl+V 粘贴截图</span>

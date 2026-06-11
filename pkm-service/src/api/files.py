@@ -28,3 +28,11 @@ async def upload_image(
 ):
     result = await file_service.upload_image(file, folder)
     return BaseResponse(data=result.dict())
+
+@router.post("/files/import/markdown", response_model=BaseResponse)
+async def import_markdown(
+    file: UploadFile = File(...),
+):
+    """导入 Markdown 文件并创建知识单元"""
+    result = await file_service.import_markdown(file)
+    return BaseResponse(data=result.dict())
