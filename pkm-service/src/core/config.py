@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+﻿from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     vision_base_url: str = "https://api.openai.com/v1"
     vision_model_name: str = "gpt-4o"
     
-    # Embedding 配置默认复用 LLM 配置
+    # Embedding configuration (reuse LLM config by default)
     embed_api_key: str = ""
     embed_base_url: str = ""
     embed_model_name: str = ""
@@ -29,6 +29,17 @@ class Settings(BaseSettings):
     
     auto_merge: bool = True
     auto_summary: bool = True
+    
+    # Scheduler settings for memory integration
+    scheduler_enabled: bool = True
+    daily_summary_enabled: bool = False
+    weekly_summary_enabled: bool = False
+    monthly_summary_enabled: bool = False
+    daily_summary_time: str = "09:00"
+    weekly_summary_day: int = 0  # 0=Monday
+    weekly_summary_time: str = "09:00"
+    monthly_summary_day: int = 1
+    monthly_summary_time: str = "09:00"
 
     class Config:
         env_file = ".env"

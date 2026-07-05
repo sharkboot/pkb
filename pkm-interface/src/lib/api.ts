@@ -308,3 +308,158 @@ interface CatalogEntry {
 
 export { API_BASE_URL };
 export type { Knowledge, Session, Task, CatalogEntry };
+ 
+ // ========== Memory Integration API ==========
+ 
+ export type SummaryType = 'daily' | 'weekly' | 'monthly';
+ 
+ export interface MergeRequest {
+   source_ids: string[];
+   auto_delete_duplicates?: boolean;
+ }
+ 
+ export interface MergeResponse {
+   merged_count: number;
+   deleted_count: number;
+   created_knowledge_id?: string;
+   merged_ids: string[];
+ }
+ 
+ export interface DeduplicationResponse {
+   checked_count: number;
+   duplicate_groups: DuplicateGroup[];
+   removed_count: number;
+ }
+ 
+ export interface DuplicateGroup {
+   representative_id: string;
+   representative_title: string;
+   duplicates: {
+     id: string;
+     title: string;
+     score: number;
+   }[];
+ }
+ 
+ export interface ScheduleConfig {
+   daily_enabled?: boolean;
+   weekly_enabled?: boolean;
+   monthly_enabled?: boolean;
+   daily_time?: string;
+   weekly_day?: number;
+   weekly_time?: string;
+   monthly_day?: number;
+   monthly_time?: string;
+ }
+ 
+ export interface MemoryStatus {
+   last_merge_time?: string;
+   last_dedup_time?: string;
+   last_summary_time?: string;
+   daily_schedule_enabled: boolean;
+   weekly_schedule_enabled: boolean;
+   monthly_schedule_enabled: boolean;
+   daily_schedule_time: string;
+   weekly_schedule_day: number;
+   weekly_schedule_time: string;
+   monthly_schedule_day: number;
+   monthly_schedule_time: string;
+ }
+ 
+ export interface SummaryResponse {
+   summary_id?: string;
+   summary_type: string;
+   knowledge_count: number;
+   content_preview?: string;
+ }
+ 
+ export interface IntegrationResult {
+   deduplication?: {
+     checked_count: number;
+     duplicate_groups: number;
+     error?: string;
+   };
+   relation_building?: {
+     knowledge_processed: number;
+     relations_built: number;
+   };
+   summary?: {
+     summary_id?: string;
+     knowledge_count: number;
+     error?: string;
+   };
+ }
+ 
+ export interface ScheduledJob {
+   id: string;
+   next_run_time?: string;
+   trigger: string;
+ }
+ 
+ // Merge multiple knowledge items
+ export async function mergeKnowledge(request: MergeRequest): Promise<MergeResponse> {
+   return fetchApi<MergeResponse>('/memory/merge', {
+     method: 'POST',
+     body: JSON.stringify(request),
+   });
+ }
+ 
+ // Find duplicate knowledge
+ export async function deduplicateKnowledge(threshold: number = 0.85): Promise<DeduplicationResponse> {
+   return fetchApi<DeduplicationResponse>(`/memory/deduplicate?threshold=${threshold}`);
+ }
+ 
+ // Generate periodic summary
+ export async function generateSummary(
+   summaryType: SummaryType,
+   title?: string
+ ): Promise<SummaryResponse> {
+   const params = new URLSearchParams();
+   if (title) params.set('title', title);
+   const query = params.toString();
+   return fetchApi<SummaryResponse>(`/memory/summary/${summaryType}${query ? `?${query}` : ''}`);
+ }
+ 
+ // Run full memory integration
+ export async function runIntegration(includeSummary: boolean = true): Promise<IntegrationResult> {
+   return fetchApi<IntegrationResult>(`/memory/integrate?include_summary=${includeSummary}`);
+ }
+ 
+ // Get memory integration status
+ export async function getMemoryStatus(): Promise<MemoryStatus> {
+   return fetchApi<MemoryStatus>('/memory/status');
+ }
+ 
+ // Update schedule configuration
+ export async function updateMemorySchedule(config: ScheduleConfig): Promise<MemoryStatus> {
+   return fetchApi<MemoryStatus>('/memory/schedule', {
+     method: 'PUT',
+     body: JSON.stringify(config),
+   });
+ }
+ 
+ // Get scheduled jobs
+ export async function getScheduledJobs(): Promise<{ jobs: ScheduledJob[] }> {
+   return fetchApi<{ jobs: ScheduledJob[] }>('/memory/schedule/jobs');
+ }
+ 
+ // Trigger a job to run immediately
+ export async function triggerScheduledJob(jobId: string): Promise<{ message: string }> {
+   return fetchApi<{ message: string }>(`/memory/schedule/jobs/${jobId}/run`, {
+     method: 'POST',
+   });
+ }
+ 
+ // Build relations for a knowledge item
+ export async function buildKnowledgeRelations(
+   knowledgeId: string,
+   limit: number = 5
+ ): Promise<{
+   knowledge_id: string;
+   relations_added: string[];
+   total_relations: number;
+ }> {
+   return fetchApi(`/memory/relations/${knowledgeId}?limit=${limit}`, {
+     method: 'POST',
+   });
+ }
