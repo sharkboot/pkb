@@ -443,6 +443,20 @@
       "status": "draft",
       "created_at": "2026-06-02T22:57:45.357519",
       "updated_at": "2026-06-02T22:58:04.179315"
+    },
+    {
+      "id": "1f165a10-9377-6460-a337-f26bf152776d",
+      "title": "Coding_Agent记忆系统研究报告",
+      "summary": "本报告对比分析了Claude Code、OpenCode和Hermes Agent三个Coding Agent的记忆系统。Claude Code采用文件驱动的CLAUDE.md多级架构，支持手动压缩和团队协作；OpenCode以会话为中心，提供持久化恢复和文件附着功能；Hermes Agent采用分层插件架构，具备MemoryManager、技能系统和跨会话记忆能力。三者分别适用于单项目深度开发、快速原型和多平台复杂协作场景。",
+      "content_preview": "# Coding Agent 记忆系统研究报告\n\n> 整理时间：2026年6月\n> 主题：Claude Code、OpenCode、OpenClaw、Hermes Agent 的记忆管理机制\n\n---\n\n## 目录\n\n1. [概述](#1-概述)\n2. [Claude Code 记忆系统](#2-claude-code-记忆系统)\n3. [OpenCode 记忆系统](#3-opencode-记忆",
+      "tags": [
+        "import"
+      ],
+      "category": null,
+      "file_path": "./knowledge_base\\inbox\\1f165a10-9377-6460-a337-f26bf152776d.md",
+      "status": "draft",
+      "created_at": "2026-06-11T22:22:54.396528",
+      "updated_at": "2026-06-11T22:23:08.002766"
     }
   ]
 }
