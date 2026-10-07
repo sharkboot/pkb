@@ -62,6 +62,17 @@ class KnowledgeUpdateRequest(BaseModel):
     status: Optional[KnowledgeStatus] = None
     category: Optional[str] = None
 
+
+class KnowledgeBulkTagRequest(BaseModel):
+    ids: List[str] = Field(..., description="知识ID列表")
+    add_tags: Optional[List[str]] = Field(default_factory=list)
+    remove_tags: Optional[List[str]] = Field(default_factory=list)
+
+
+class KnowledgeBulkStatusRequest(BaseModel):
+    ids: List[str] = Field(..., description="知识ID列表")
+    status: KnowledgeStatus
+
 class Session(BaseModel):
     id: UUID
     title: Optional[str] = None
