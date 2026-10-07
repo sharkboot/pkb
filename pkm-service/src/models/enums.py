@@ -4,6 +4,7 @@ class SourceType(str, Enum):
     SCREENSHOT = "screenshot"
     TEXT = "text"
     WEB = "web"
+    URL = "url"
     PDF = "pdf"
     IMAGE = "image"
     MANUAL = "manual"

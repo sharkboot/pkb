@@ -7,6 +7,7 @@ from storage.markdown_storage import MarkdownStorage
 from models.schemas import ContentCollectRequest, KnowledgeUnit
 from models.enums import SourceType, KnowledgeStatus
 from services.knowledge_service import KnowledgeService
+from services.web_service import is_url, fetch_web_content
 
 logger = logging.getLogger(__name__)
 
@@ -17,20 +18,34 @@ class ContentService:
 
     async def collect(self, request: ContentCollectRequest) -> KnowledgeUnit:
         logger.info(f"接收到内容收集请求，类型: {request.source_type}")
+
+        # URL 类型：先抓取网页内容
+        if request.source_type == SourceType.URL:
+            url = request.metadata.get("url") if request.metadata else None
+            if not url and request.content:
+                url = request.content.strip()
+            if url and is_url(url):
+                web_data = await fetch_web_content(url)
+                if web_data:
+                    request = request.copy(deep=True)
+                    request.content = f"# {web_data['title']}\n\n{web_data['content']}"
+                    request.metadata = {**(request.metadata or {}), "url": url}
+                    logger.info(f"网页抓取成功: {url}")
+
         title = self._generate_title(request)
         content = self._build_content(request)
-        
+
         from models.schemas import KnowledgeCreateRequest
         create_request = KnowledgeCreateRequest(
             title=title,
             content=content,
             tags=self._extract_tags(request),
         )
-        
+
         knowledge = await self.knowledge_service.create_knowledge(create_request)
         logger.info(f"知识创建成功，ID: {knowledge.id}")
         await self._trigger_auto_process(knowledge.id, request.source_type)
-        
+
         return knowledge
 
     def _generate_title(self, request: ContentCollectRequest) -> str:
