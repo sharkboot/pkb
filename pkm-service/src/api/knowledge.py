@@ -73,6 +73,32 @@ async def smart_search(
     })
 
 
+@router.get("/knowledge/fts/search", response_model=BaseResponse)
+async def fts_search(
+    q: str = Query(..., description="Search keyword"),
+    category: str = Query(None),
+    tags: str = Query(None, description="Comma-separated tag filter"),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """SQLite FTS5 full-text search — fast keyword + tag combined search."""
+    tag_list = [t.strip() for t in tags.split(",") if t.strip()] if tags else None
+    result = await knowledge_service.fts_search(q, category=category, tags=tag_list, limit=limit)
+    return BaseResponse(data=result)
+
+
+@router.post("/knowledge/fts/rebuild", response_model=BaseResponse)
+async def fts_rebuild():
+    """Rebuild FTS index from all knowledge in storage."""
+    count = await knowledge_service.fts_rebuild()
+    return BaseResponse(data={"count": count})
+
+
+@router.get("/knowledge/fts/status", response_model=BaseResponse)
+async def fts_status():
+    count = await knowledge_service.fts_index_count()
+    return BaseResponse(data={"indexed": count})
+
+
 @router.post("/knowledge/semantic-search", response_model=BaseResponse)
 async def semantic_search(
     query: str = Body(..., embed=True),

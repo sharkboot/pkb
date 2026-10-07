@@ -4,6 +4,7 @@ from uuid6 import uuid6
 from datetime import datetime
 from storage.markdown_storage import MarkdownStorage
 from storage.vector_storage import vector_storage
+from storage.fts_index import fts_index
 from models.schemas import KnowledgeUnit, KnowledgeCreateRequest, KnowledgeUpdateRequest
 from models.enums import KnowledgeStatus, SourceType
 from models.exceptions import ResourceNotFoundException
@@ -38,6 +39,12 @@ class KnowledgeService:
 
         # Auto-embed when vector store is enabled
         await self._upsert_vector(knowledge)
+
+        # Sync FTS index
+        try:
+            fts_index.upsert(knowledge)
+        except Exception as e:
+            logger.warning(f"FTS upsert skipped for {knowledge.id}: {e}")
 
         return knowledge
 
@@ -93,6 +100,11 @@ class KnowledgeService:
         content_changed = any(k in updates for k in ("title", "summary", "content"))
         if content_changed:
             await self._upsert_vector(updated)
+        # Sync FTS index on any update
+        try:
+            fts_index.upsert(updated)
+        except Exception as e:
+            logger.warning(f"FTS update skipped for {knowledge_id}: {e}")
         return updated
 
     async def delete_knowledge(self, knowledge_id: UUID) -> bool:
@@ -103,7 +115,57 @@ class KnowledgeService:
         result = await self.storage.delete_knowledge(knowledge_id)
         if result:
             await self._delete_vector(knowledge_id)
+            try:
+                fts_index.delete(str(knowledge_id))
+            except Exception as e:
+                logger.warning(f"FTS delete skipped for {knowledge_id}: {e}")
         return result
+
+    async def fts_search(
+        self,
+        keyword: str,
+        category: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        limit: int = 20,
+    ) -> Dict[str, Any]:
+        """Full-text search via SQLite FTS5.
+
+        Returns:
+            {
+                "keyword": str,
+                "results": [KnowledgeUnit dict with bm25_score],
+                "total": int
+            }
+        """
+        import time
+        t0 = time.monotonic()
+        hits = fts_index.search(keyword=keyword, category=category, tags=tags, limit=limit)
+        elapsed_ms = int((time.monotonic() - t0) * 1000)
+
+        results = []
+        for hit in hits:
+            try:
+                knowledge = await self.get_knowledge(UUID(hit["id"]))
+                results.append({
+                    **knowledge.dict(),
+                    "bm25_score": hit.get("bm25_score", 0.0),
+                })
+            except Exception:
+                continue
+
+        return {
+            "keyword": keyword,
+            "results": results,
+            "total": len(results),
+            "elapsed_ms": elapsed_ms,
+        }
+
+    async def fts_index_count(self) -> int:
+        return fts_index.count()
+
+    async def fts_rebuild(self) -> int:
+        all_knowledge, _ = await self.list_knowledge(page=1, page_size=100000)
+        return fts_index.rebuild(all_knowledge)
 
     async def semantic_search(
         self,
