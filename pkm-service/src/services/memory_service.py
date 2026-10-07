@@ -880,3 +880,85 @@ class MemoryService:
             }
         
         return results
+
+    async def auto_merge(self, threshold: float = 0.85, auto_delete: bool = True) -> Dict[str, Any]:
+        """Automatically find and merge duplicate knowledge items.
+
+        This method:
+        1. Finds duplicate groups using embedding similarity
+        2. Merges each group into a single knowledge item
+        3. Deletes original items if auto_delete is True
+        4. Returns merge statistics
+
+        Args:
+            threshold: Similarity threshold for considering items as duplicates
+            auto_delete: Whether to delete original items after merge
+
+        Returns:
+            Dict with merge statistics
+        """
+        from services.knowledge_service import KnowledgeService
+        from models.schemas import KnowledgeCreateRequest
+
+        # Step 1: Find duplicates
+        dedup_result = await self.deduplicate(threshold=threshold)
+
+        if not dedup_result.duplicate_groups:
+            return {
+                "merged_count": 0,
+                "deleted_count": 0,
+                "groups_found": 0,
+                "message": "No duplicates found",
+            }
+
+        # Step 2: Merge each duplicate group
+        merged_count = 0
+        deleted_count = 0
+        merge_results = []
+
+        for group in dedup_result.duplicate_groups:
+            representative_id = group["representative_id"]
+            duplicate_ids = [d["id"] for d in group["duplicates"]]
+            source_ids = [representative_id] + duplicate_ids
+
+            try:
+                # Merge the knowledge items
+                merge_result = await self.merge_knowledge(source_ids, auto_delete=False)
+
+                if merge_result.error:
+                    merge_results.append({
+                        "source_ids": source_ids,
+                        "error": merge_result.error,
+                    })
+                    continue
+
+                merged_count += 1
+
+                # Delete original items if requested
+                if auto_delete:
+                    for sid in source_ids:
+                        try:
+                            await self.storage.delete_knowledge(UUID(sid))
+                            deleted_count += 1
+                        except Exception as e:
+                            logger.error(f"Failed to delete {sid}: {e}")
+
+                merge_results.append({
+                    "source_ids": source_ids,
+                    "merged_id": str(merge_result.created_knowledge.id),
+                    "merged_title": merge_result.created_knowledge.title,
+                })
+
+            except Exception as e:
+                logger.error(f"Failed to merge group {source_ids}: {e}")
+                merge_results.append({
+                    "source_ids": source_ids,
+                    "error": str(e),
+                })
+
+        return {
+            "merged_count": merged_count,
+            "deleted_count": deleted_count,
+            "groups_found": len(dedup_result.duplicate_groups),
+            "merge_results": merge_results,
+        }

@@ -307,3 +307,19 @@ async def promote_hot(threshold: float = Query(0.8, ge=0.0, le=1.0)):
     """Promote high-score knowledge to permanent notes."""
     result = await memory_service.promote_hot(threshold=threshold)
     return BaseResponse(data=result)
+
+
+@router.post("/memory/auto-merge", response_model=BaseResponse)
+async def auto_merge(
+    threshold: float = Query(0.85, ge=0.5, le=1.0, description="Similarity threshold (0-1)"),
+    auto_delete: bool = Query(True, description="Delete original items after merge"),
+):
+    """Automatically find and merge duplicate knowledge items.
+
+    - Uses embedding similarity to detect duplicates above threshold
+    - Merges duplicate groups into single knowledge items
+    - Optionally deletes original items after merge
+    - Returns merge statistics
+    """
+    result = await memory_service.auto_merge(threshold=threshold, auto_delete=auto_delete)
+    return BaseResponse(data=result)
