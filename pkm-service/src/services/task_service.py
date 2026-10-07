@@ -8,7 +8,9 @@ from storage.markdown_storage import MarkdownStorage
 from models.schemas import Task, TaskCreateRequest
 from models.enums import TaskType
 from models.exceptions import ResourceNotFoundException, TaskExecuteException
-from llm.provider import chat_completion, create_embedding, chat_completion_with_images
+from llm.provider import chat_completion, create_embedding, create_embedding_cached, chat_completion_with_images
+from storage.vector_storage import vector_storage
+from storage.embedding_cache import embedding_cache
 from core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -189,13 +191,32 @@ class TaskService:
             return {"message": f"归档任务失败: {str(e)}", "target_id": task.target_id}
 
     async def _process_vector_index(self, task: Task) -> Dict[str, Any]:
+        """Generate embedding and persist to vector store.
+
+        Uses cached embedding when content is unchanged to avoid redundant API calls.
+        """
+        from services.knowledge_service import KnowledgeService
+        knowledge_service = KnowledgeService()
+
         content = await self._get_knowledge_content(task.target_id)
         if not content:
             return {"message": "未找到内容", "target_id": task.target_id}
-        
+
         try:
-            embedding = await create_embedding(text=content[:1000])
-            return {"message": "向量索引已生成", "target_id": task.target_id, "embedding_dim": len(embedding)}
+            # Use cached embedding — skips API call when content unchanged
+            embedding = await create_embedding_cached(content[:1000])
+
+            # Persist to Chroma vector store
+            knowledge = await knowledge_service.get_knowledge(UUID(task.target_id))
+            await vector_storage.upsert_knowledge(knowledge, embedding)
+
+            cache_stats = embedding_cache.stats()
+            return {
+                "message": "向量索引已生成并持久化",
+                "target_id": task.target_id,
+                "embedding_dim": len(embedding),
+                "cache_hit_rate_pct": cache_stats["hit_rate_pct"],
+            }
         except Exception as e:
             logger.error(f"向量索引任务失败: {str(e)}")
             return {"message": f"向量索引任务失败: {str(e)}", "target_id": task.target_id}

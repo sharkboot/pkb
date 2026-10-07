@@ -117,3 +117,60 @@ async def create_embedding(text: str) -> list:
         return response.data[0].embedding
 
     return await asyncio.to_thread(_call)
+
+
+async def create_embedding_cached(text: str) -> list:
+    """调用 Embedding 接口生成向量（带本地缓存，内容未变化时直接返回缓存）"""
+    from storage.embedding_cache import embedding_cache
+
+    cached = embedding_cache.get(text)
+    if cached is not None:
+        return cached
+
+    embedding = await create_embedding(text)
+    embedding_cache.set(text, embedding)
+    return embedding
+
+
+async def create_embeddings(texts: List[str]) -> List[List[float]]:
+    """批量调用 Embedding 接口（单次请求，多条输入）
+
+    OpenAI 兼容 API 支持一次传入多条文本，减少网络往返。
+    单条时走缓存路径。
+    """
+    from storage.embedding_cache import embedding_cache
+    from typing import List
+
+    # 先查缓存
+    results: List[Optional[List[float]]] = [None] * len(texts)
+    cache_hits: Dict[int, List[float]] = {}
+    to_fetch: List[int] = []
+
+    for i, text in enumerate(texts):
+        cached = embedding_cache.get(text)
+        if cached is not None:
+            cache_hits[i] = cached
+        else:
+            to_fetch.append(i)
+
+    for i in cache_hits:
+        results[i] = cache_hits[i]
+
+    # 批量获取未命中的
+    if to_fetch:
+        client = _get_embed_client()
+
+        def _batch_call():
+            response = client.embeddings.create(
+                model=settings.final_embed_model_name,
+                input=[texts[i] for i in to_fetch],
+            )
+            return response.data
+
+        data = await asyncio.to_thread(_batch_call)
+        for j, idx in enumerate(to_fetch):
+            emb = data[j].embedding
+            results[idx] = emb
+            embedding_cache.set(texts[idx], emb)
+
+    return results

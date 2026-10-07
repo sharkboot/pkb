@@ -13,7 +13,7 @@ from enum import Enum
 from storage.markdown_storage import MarkdownStorage
 from models.schemas import KnowledgeUnit, KnowledgeCreateRequest
 from models.enums import KnowledgeStatus
-from llm.provider import chat_completion, create_embedding
+from llm.provider import chat_completion, create_embedding, create_embedding_cached, create_embeddings
 from core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -208,23 +208,25 @@ class MemoryService:
             
             if not candidates:
                 return []
-            
-            # Create embedding for reference knowledge
+
+            # Create embedding for reference knowledge (cached)
             ref_text = f"{knowledge.title}\n{knowledge.summary or ''}\n{knowledge.content[:500]}"
-            ref_embedding = await create_embedding(ref_text)
-            
+            ref_embedding = await create_embedding_cached(ref_text)
+
+            # Batch-fetch all candidate embeddings in a single request
+            candidate_texts = [
+                f"{k.title}\n{k.summary or ''}\n{k.content[:500]}"
+                for k in candidates
+            ]
+            candidate_embeddings = await create_embeddings(candidate_texts)
+
             # Calculate similarities
             similarities = []
-            for candidate in candidates:
-                candidate_text = f"{candidate.title}\n{candidate.summary or ''}\n{candidate.content[:500]}"
-                candidate_embedding = await create_embedding(candidate_text)
-                
-                # Cosine similarity
+            for candidate, candidate_embedding in zip(candidates, candidate_embeddings):
                 similarity = self._cosine_similarity(ref_embedding, candidate_embedding)
-                
                 if similarity >= threshold:
                     similarities.append((candidate, similarity))
-            
+
             # Sort by similarity and return top N
             similarities.sort(key=lambda x: x[1], reverse=True)
             return similarities[:limit]
