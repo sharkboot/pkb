@@ -199,3 +199,89 @@ async def restore_knowledge(knowledge_id: UUID = Path(...)):
 async def permanent_delete(knowledge_id: UUID = Path(...)):
     success = await knowledge_service.permanent_delete(knowledge_id)
     return BaseResponse(data={"success": success})
+
+
+@router.get("/knowledge/{knowledge_id}/versions", response_model=BaseResponse)
+async def get_knowledge_versions(knowledge_id: UUID = Path(...)):
+    """Get version history for a knowledge item."""
+    versions = await knowledge_service.storage.get_versions(knowledge_id)
+    return BaseResponse(data={"versions": versions})
+
+
+@router.get("/knowledge/{knowledge_id}/versions/{version_id}", response_model=BaseResponse)
+async def get_knowledge_version(
+    knowledge_id: UUID = Path(...),
+    version_id: str = Path(...),
+):
+    """Get a specific version of knowledge."""
+    version = await knowledge_service.storage.get_version(knowledge_id, version_id)
+    if not version:
+        return BaseResponse(code=404, message="Version not found")
+    return BaseResponse(data=version.dict())
+
+
+@router.post("/knowledge/{knowledge_id}/restore/{version_id}", response_model=BaseResponse)
+async def restore_knowledge_version(
+    knowledge_id: UUID = Path(...),
+    version_id: str = Path(...),
+):
+    """Restore knowledge to a specific version."""
+    from models.schemas import KnowledgeUpdateRequest
+    version = await knowledge_service.storage.get_version(knowledge_id, version_id)
+    if not version:
+        return BaseResponse(code=404, message="Version not found")
+
+    updated = await knowledge_service.update_knowledge(
+        knowledge_id,
+        KnowledgeUpdateRequest(
+            title=version.title,
+            content=version.content,
+            summary=version.summary,
+            tags=version.tags,
+            category=version.category,
+        )
+    )
+    return BaseResponse(data={"restored_to_version": version_id, "knowledge": updated.dict()})
+
+
+@router.get("/knowledge/{knowledge_id}/versions", response_model=BaseResponse)
+async def get_knowledge_versions(knowledge_id: UUID = Path(...)):
+    """Get version history for a knowledge item."""
+    versions = await knowledge_service.storage.get_versions(knowledge_id)
+    return BaseResponse(data={"versions": versions})
+
+
+@router.get("/knowledge/{knowledge_id}/versions/{version_id}", response_model=BaseResponse)
+async def get_knowledge_version(
+    knowledge_id: UUID = Path(...),
+    version_id: str = Path(...),
+):
+    """Get a specific version of knowledge."""
+    version = await knowledge_service.storage.get_version(knowledge_id, version_id)
+    if not version:
+        return BaseResponse(code=404, message="Version not found")
+    return BaseResponse(data=version.dict())
+
+
+@router.post("/knowledge/{knowledge_id}/restore/{version_id}", response_model=BaseResponse)
+async def restore_knowledge_version(
+    knowledge_id: UUID = Path(...),
+    version_id: str = Path(...),
+):
+    """Restore knowledge to a specific version."""
+    version = await knowledge_service.storage.get_version(knowledge_id, version_id)
+    if not version:
+        return BaseResponse(code=404, message="Version not found")
+
+    from models.schemas import KnowledgeUpdateRequest
+    updated = await knowledge_service.update_knowledge(
+        knowledge_id,
+        KnowledgeUpdateRequest(
+            title=version.title,
+            content=version.content,
+            summary=version.summary,
+            tags=version.tags,
+            category=version.category,
+        )
+    )
+    return BaseResponse(data={"restored_to_version": version_id, "knowledge": updated.dict()})

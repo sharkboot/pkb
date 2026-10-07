@@ -5,7 +5,7 @@ import hashlib
 import tempfile
 import zipfile
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from fastapi import UploadFile
 from core.config import settings
@@ -48,19 +48,198 @@ class FileService:
         except Exception as e:
             raise FileProcessException(f"文件上传失败: {str(e)}")
 
-    async def export_knowledge_base(self) -> str:
+    async def export_knowledge_base(self, format: str = "markdown") -> str:
+        """Export knowledge base in specified format (markdown, pdf, epub, txt).
+
+        Args:
+            format: Export format - 'markdown' (default), 'pdf', 'epub', 'txt'
+
+        Returns:
+            Path to the exported file
+        """
+        from services.knowledge_service import KnowledgeService
+        knowledge_service = KnowledgeService()
+
+        all_knowledge, _ = await knowledge_service.list_knowledge(page=1, page_size=10000)
+
+        export_path = os.path.join(settings.knowledge_base_path, "export")
+        os.makedirs(export_path, exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        if format == "markdown":
+            return await self._export_markdown(all_knowledge, export_path, timestamp)
+        elif format == "txt":
+            return await self._export_txt(all_knowledge, export_path, timestamp)
+        elif format == "pdf":
+            return await self._export_pdf(all_knowledge, export_path, timestamp)
+        elif format == "epub":
+            return await self._export_epub(all_knowledge, export_path, timestamp)
+        else:
+            raise FileProcessException(f"不支持的导出格式: {format}")
+
+    async def _export_markdown(self, knowledge_list, export_path: str, timestamp: str) -> str:
+        """Export as Markdown zip."""
+        zip_path = os.path.join(export_path, f"knowledge_base_{timestamp}.zip")
+
+        import zipfile
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for knowledge in knowledge_list:
+                # Skip deleted items
+                if knowledge.status.value in ("deleted", "archived"):
+                    continue
+
+                content = f"# {knowledge.title}\n\n"
+                if knowledge.summary:
+                    content += f"> **摘要**: {knowledge.summary}\n\n"
+                if knowledge.tags:
+                    content += f"**标签**: {', '.join(knowledge.tags)}\n\n"
+                content += knowledge.content
+
+                safe_title = "".join(c if c.isalnum() else "_" for c in knowledge.title)[:50]
+                zf.writestr(f"{safe_title}.md", content)
+
+        return zip_path
+
+    async def _export_txt(self, knowledge_list, export_path: str, timestamp: str) -> str:
+        """Export as plain text."""
+        txt_path = os.path.join(export_path, f"knowledge_base_{timestamp}.txt")
+
+        with open(txt_path, "w", encoding="utf-8") as f:
+            for knowledge in knowledge_list:
+                if knowledge.status.value in ("deleted", "archived"):
+                    continue
+
+                f.write(f"{'='*60}\n")
+                f.write(f"{knowledge.title}\n")
+                f.write(f"{'='*60}\n\n")
+
+                if knowledge.summary:
+                    f.write(f"摘要: {knowledge.summary}\n\n")
+
+                f.write(knowledge.content + "\n\n")
+
+        return txt_path
+
+    async def _export_pdf(self, knowledge_list, export_path: str, timestamp: str) -> str:
+        """Export as PDF (requires reportlab or markdown2pdf)."""
+        pdf_path = os.path.join(export_path, f"knowledge_base_{timestamp}.pdf")
+
         try:
-            export_path = os.path.join(settings.knowledge_base_path, "export")
-            os.makedirs(export_path, exist_ok=True)
+            # Try using markdown2pdf (easier dependency)
+            from markdown2pdf import convert_markdown
+            import tempfile
 
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            zip_path = os.path.join(export_path, f"knowledge_base_{timestamp}.zip")
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # Write each knowledge as a markdown file
+                for i, knowledge in enumerate(knowledge_list):
+                    if knowledge.status.value in ("deleted", "archived"):
+                        continue
 
-            shutil.make_archive(zip_path.replace(".zip", ""), "zip", settings.knowledge_base_path)
+                    md_path = os.path.join(tmpdir, f"knowledge_{i}.md")
+                    with open(md_path, "w", encoding="utf-8") as f:
+                        f.write(f"# {knowledge.title}\n\n")
+                        if knowledge.summary:
+                            f.write(f"> **摘要**: {knowledge.summary}\n\n")
+                        if knowledge.tags:
+                            f.write(f"**标签**: {', '.join(knowledge.tags)}\n\n")
+                        f.write(knowledge.content)
 
-            return zip_path
-        except Exception as e:
-            raise FileProcessException(f"导出失败: {str(e)}")
+                # Convert to PDF
+                convert_markdown(in_path=tmpdir, out_path=pdf_path)
+
+            return pdf_path
+        except ImportError:
+            # Fallback: create a simple text-based PDF
+            return await self._export_simple_pdf(knowledge_list, pdf_path)
+
+    async def _export_simple_pdf(self, knowledge_list, pdf_path: str) -> str:
+        """Fallback PDF export using reportlab if available."""
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.pdfgen import canvas
+
+            c = canvas.Canvas(pdf_path, pagesize=A4)
+            width, height = A4
+
+            y_position = height - 50
+
+            for knowledge in knowledge_list:
+                if knowledge.status.value in ("deleted", "archived"):
+                    continue
+
+                # Add title
+                c.setFont("Helvetica-Bold", 16)
+                c.drawString(50, y_position, knowledge.title)
+                y_position -= 30
+
+                # Add summary if exists
+                if knowledge.summary:
+                    c.setFont("Helvetica-Oblique", 10)
+                    c.drawString(50, y_position, f"摘要: {knowledge.summary}")
+                    y_position -= 20
+
+                # Add content (word wrap)
+                c.setFont("Helvetica", 10)
+                lines = knowledge.content.split('\n')
+                for line in lines:
+                    if y_position < 50:
+                        c.showPage()
+                        y_position = height - 50
+                    c.drawString(50, y_position, line[:80])
+                    y_position -= 15
+
+            c.save()
+            return pdf_path
+        except ImportError:
+            raise FileProcessException("PDF导出需要安装 reportlab: pip install reportlab")
+
+    async def _export_epub(self, knowledge_list, export_path: str, timestamp: str) -> str:
+        """Export as EPUB (requires ebooklib)."""
+        epub_path = os.path.join(export_path, f"knowledge_base_{timestamp}.epub")
+
+        try:
+            from ebooklib import epub
+
+            book = epub.EpubBook()
+            book.set_identifier('pkb-export-' + timestamp)
+            book.set_title('PKB Knowledge Export')
+            book.set_language('zh')
+
+            # Create chapters
+            chapters = []
+            for knowledge in knowledge_list:
+                if knowledge.status.value in ("deleted", "archived"):
+                    continue
+
+                chapter_content = f"<h1>{knowledge.title}</h1>\n"
+                if knowledge.summary:
+                    chapter_content += f"<p><strong>摘要:</strong> {knowledge.summary}</p>\n"
+                if knowledge.tags:
+                    chapter_content += f"<p><strong>标签:</strong> {', '.join(knowledge.tags)}</p>\n"
+                chapter_content += f"<p>{knowledge.content.replace(chr(10), '<br>')}</p>"
+
+                chapter = epub.EpubHtml(
+                    title=knowledge.title[:50],
+                    file_name=f"knowledge_{len(chapters)}.xhtml",
+                    lang='zh'
+                )
+                chapter.content = chapter_content
+                chapters.append(chapter)
+                book.add_item(chapter)
+
+            # Add table of contents
+            book.toc = chapters
+            book.add_item(epub.EpubNav())
+            book.add_spine('nav', chapters)
+
+            # Write EPUB
+            with open(epub_path, 'wb') as f:
+                epub.write_epub(f, book, {})
+
+            return epub_path
+        except ImportError:
+            raise FileProcessException("EPUB导出需要安装 ebooklib: pip install ebooklib")
 
     def get_markdown_content(self, knowledge_id: UUID) -> Optional[str]:
         from services.knowledge_service import KnowledgeService

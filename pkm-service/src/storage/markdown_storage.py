@@ -303,6 +303,9 @@ class MarkdownStorage(BaseStorage):
         if not knowledge:
             return False
 
+        # Create version snapshot before update
+        await self._create_version_snapshot(knowledge)
+
         for key, value in updates.items():
             if hasattr(knowledge, key):
                 setattr(knowledge, key, value)
@@ -311,6 +314,102 @@ class MarkdownStorage(BaseStorage):
         await self.save_knowledge(knowledge)
         # save_knowledge 已包含 _update_catalog
         return True
+
+    async def _create_version_snapshot(self, knowledge: KnowledgeUnit):
+        """Save a snapshot of current knowledge as a version before update."""
+        import asyncio
+        versions_dir = os.path.join(self.base_path, "versions", str(knowledge.id))
+        os.makedirs(versions_dir, exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        version_file = os.path.join(versions_dir, f"{timestamp}.md")
+
+        metadata = {
+            "id": str(knowledge.id),
+            "title": knowledge.title,
+            "tags": knowledge.tags,
+            "category": knowledge.category,
+            "source": knowledge.source,
+            "score": knowledge.score,
+            "version_timestamp": timestamp,
+            "created_at": knowledge.created_at.isoformat(),
+        }
+        if knowledge.summary:
+            metadata["summary"] = knowledge.summary
+
+        post = frontmatter.Post(knowledge.content, **metadata)
+
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._write_frontmatter, version_file, post)
+
+        # Clean up old versions (keep only last 20)
+        self._cleanup_old_versions(versions_dir, max_versions=20)
+
+    def _cleanup_old_versions(self, versions_dir: str, max_versions: int = 20):
+        """Remove old version files, keeping only the most recent max_versions."""
+        if not os.path.exists(versions_dir):
+            return
+        files = sorted(
+            [f for f in os.listdir(versions_dir) if f.endswith(".md")],
+            reverse=True
+        )
+        for old_file in files[max_versions:]:
+            os.remove(os.path.join(versions_dir, old_file))
+
+    async def get_versions(self, knowledge_id: UUID) -> List[Dict[str, Any]]:
+        """Get list of all versions for a knowledge item."""
+        versions_dir = os.path.join(self.base_path, "versions", str(knowledge_id))
+        if not os.path.exists(versions_dir):
+            return []
+
+        versions = []
+        for filename in sorted(os.listdir(versions_dir), reverse=True):
+            if filename.endswith(".md"):
+                file_path = os.path.join(versions_dir, filename)
+                try:
+                    loop = asyncio.get_event_loop()
+                    post = await loop.run_in_executor(None, self._read_frontmatter, file_path)
+                    versions.append({
+                        "version_id": filename.replace(".md", ""),
+                        "timestamp": post.get("version_timestamp", ""),
+                        "title": post.get("title", ""),
+                        "content_preview": post.content[:100] if post.content else "",
+                    })
+                except Exception:
+                    continue
+        return versions
+
+    async def get_version(self, knowledge_id: UUID, version_id: str) -> Optional[KnowledgeUnit]:
+        """Get a specific version of knowledge by version ID."""
+        version_file = os.path.join(self.base_path, "versions", str(knowledge_id), f"{version_id}.md")
+        if not os.path.exists(version_file):
+            return None
+
+        try:
+            loop = asyncio.get_event_loop()
+            post = await loop.run_in_executor(None, self._read_frontmatter, version_file)
+
+            # Parse timestamps
+            created_at = post.get("created_at", datetime.now().isoformat())
+            version_timestamp = post.get("version_timestamp", version_id)
+
+            return KnowledgeUnit(
+                id=UUID(post.get("id", knowledge_id)),
+                title=post.get("title", ""),
+                summary=post.get("summary"),
+                content=post.content,
+                source_refs=[],
+                tags=post.get("tags", []),
+                relations=[],
+                status=KnowledgeStatus.DRAFT,
+                category=post.get("category"),
+                source=post.get("source"),
+                score=post.get("score", 0.0),
+                created_at=datetime.fromisoformat(created_at),
+                updated_at=datetime.fromisoformat(version_timestamp),
+            )
+        except Exception:
+            return None
 
     async def delete_knowledge(self, knowledge_id: UUID) -> bool:
         knowledge = await self.get_knowledge(knowledge_id)
