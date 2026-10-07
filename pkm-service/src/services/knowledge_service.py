@@ -3,10 +3,16 @@ from uuid import UUID
 from uuid6 import uuid6
 from datetime import datetime
 from storage.markdown_storage import MarkdownStorage
+from storage.vector_storage import vector_storage
 from models.schemas import KnowledgeUnit, KnowledgeCreateRequest, KnowledgeUpdateRequest
 from models.enums import KnowledgeStatus, SourceType
 from models.exceptions import ResourceNotFoundException
-from llm.provider import chat_completion
+from llm.provider import chat_completion, create_embedding
+from core.config import settings
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class KnowledgeService:
     def __init__(self):
@@ -27,9 +33,33 @@ class KnowledgeService:
             created_at=now,
             updated_at=now,
         )
-        
+
         await self.storage.save_knowledge(knowledge)
+
+        # Auto-embed when vector store is enabled
+        await self._upsert_vector(knowledge)
+
         return knowledge
+
+    async def _upsert_vector(self, knowledge: KnowledgeUnit):
+        """Upsert knowledge embedding into vector store (no-op when disabled)."""
+        if not vector_storage.enabled:
+            return
+        try:
+            text = f"{knowledge.title}\n{knowledge.summary or ''}\n{knowledge.content[:500]}"
+            embedding = await create_embedding(text)
+            await vector_storage.upsert_knowledge(knowledge, embedding)
+        except Exception as e:
+            logger.warning(f"Vector upsert skipped for {knowledge.id}: {e}")
+
+    async def _delete_vector(self, knowledge_id: UUID):
+        """Remove knowledge embedding from vector store (no-op when disabled)."""
+        if not vector_storage.enabled:
+            return
+        try:
+            await vector_storage.delete_knowledge(knowledge_id)
+        except Exception as e:
+            logger.warning(f"Vector delete skipped for {knowledge_id}: {e}")
 
     async def get_knowledge(self, knowledge_id: UUID) -> KnowledgeUnit:
         knowledge = await self.storage.get_knowledge(knowledge_id)
@@ -57,15 +87,81 @@ class KnowledgeService:
         success = await self.storage.update_knowledge(knowledge_id, updates)
         if not success:
             raise ResourceNotFoundException(f"知识单元 {knowledge_id} 不存在")
-        
-        return await self.get_knowledge(knowledge_id)
+
+        updated = await self.get_knowledge(knowledge_id)
+        # Re-embed when content/title/summary changes
+        content_changed = any(k in updates for k in ("title", "summary", "content"))
+        if content_changed:
+            await self._upsert_vector(updated)
+        return updated
 
     async def delete_knowledge(self, knowledge_id: UUID) -> bool:
         knowledge = await self.storage.get_knowledge(knowledge_id)
         if not knowledge:
             raise ResourceNotFoundException(f"知识单元 {knowledge_id} 不存在")
-        
-        return await self.storage.delete_knowledge(knowledge_id)
+
+        result = await self.storage.delete_knowledge(knowledge_id)
+        if result:
+            await self._delete_vector(knowledge_id)
+        return result
+
+    async def semantic_search(
+        self,
+        query: str,
+        category: Optional[str] = None,
+        limit: int = 10,
+    ) -> Dict[str, Any]:
+        """Vector semantic search. Falls back to catalog search when vector store is disabled.
+
+        Returns:
+            {
+                "query": str,
+                "results": [KnowledgeUnit dict with similarity score],
+                "total": int,
+                "source": "vector" | "fallback",
+                "scores": [float]  # similarity scores parallel to results
+            }
+        """
+        if not vector_storage.enabled:
+            # Fallback: keyword catalog search (returns results, total, catalog_entries)
+            results, total, _ = await self.search_knowledge(query, category, use_catalog=True)
+            return {
+                "query": query,
+                "results": [
+                    {**k.dict(), "score": None} for k in results
+                ],
+                "total": total,
+                "source": "fallback",
+                "scores": [],
+            }
+
+        # Vector path
+        query_embedding = await create_embedding(query)
+        hits = await vector_storage.semantic_search(
+            query_embedding=query_embedding,
+            limit=limit,
+            category=category,
+        )
+
+        results = []
+        for hit in hits:
+            try:
+                knowledge = await self.get_knowledge(UUID(hit["id"]))
+                results.append({
+                    **knowledge.dict(),
+                    "score": hit["score"],
+                })
+            except Exception:
+                # Knowledge file may have been removed; skip
+                continue
+
+        return {
+            "query": query,
+            "results": results,
+            "total": len(results),
+            "source": "vector",
+            "scores": [r["score"] for r in results],
+        }
 
     async def list_knowledge(
         self,

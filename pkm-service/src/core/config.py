@@ -22,10 +22,14 @@ class Settings(BaseSettings):
     embed_model_name: str = ""
     
     vector_store_enabled: bool = False
-    vector_store_type: str = "milvus"
+    vector_store_type: str = "chroma"  # chroma (local) | milvus
     vector_store_host: str = "localhost"
     vector_store_port: int = 19530
     vector_store_db: str = "default"
+    # Chroma local persistent storage path
+    vector_store_path: str = "./knowledge_base/vector_store"
+    # Similarity threshold for semantic search (cosine distance; Chroma returns distance not similarity)
+    semantic_search_min_similarity: float = 0.3
     
     auto_merge: bool = True
     auto_summary: bool = True

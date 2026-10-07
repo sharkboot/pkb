@@ -73,6 +73,37 @@ async def smart_search(
     })
 
 
+@router.post("/knowledge/semantic-search", response_model=BaseResponse)
+async def semantic_search(
+    query: str = Body(..., embed=True),
+    category: str = Body(None, embed=True),
+    limit: int = Body(10, embed=True),
+):
+    """Vector semantic search (Chroma). Falls back to keyword search when vector store is disabled."""
+    result = await knowledge_service.semantic_search(query, category=category, limit=limit)
+    return BaseResponse(data=result)
+
+
+@router.post("/knowledge/vector/index-all", response_model=BaseResponse)
+async def index_all_vectors():
+    """Bulk re-index all active knowledge items into the vector store."""
+    from storage.vector_storage import vector_storage
+    from llm.provider import create_embedding
+    result = await vector_storage.index_all(knowledge_service, create_embedding)
+    return BaseResponse(data=result)
+
+
+@router.get("/knowledge/vector/status", response_model=BaseResponse)
+async def vector_store_status():
+    """Get vector store status: enabled flag and current index count."""
+    from storage.vector_storage import vector_storage
+    count = await vector_storage.index_count()
+    return BaseResponse(data={
+        "enabled": vector_storage.enabled,
+        "indexed": count,
+    })
+
+
 @router.get("/knowledge/catalog", response_model=BaseResponse)
 async def get_catalog(
     keyword: str = Query(None),

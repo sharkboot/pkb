@@ -11,3 +11,4 @@ uuid6==2024.1.12
 apscheduler==3.10.4
 requests==2.31.0
 openai==1.30.0
+chromadb==0.5.5

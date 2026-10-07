@@ -628,7 +628,7 @@ class MemoryService:
             logger.error(f"Summary generation failed: {e}")
             return SummaryResult(error=str(e))
 
-    def _write_frontmatter(self, file_path: str, post: frontmatter.Post):
+    def _write_frontmatter(self, file_path: str, post: "frontmatter.Post"):
         """Write frontmatter to file"""
         import frontmatter
         with open(file_path, "w", encoding="utf-8") as f:
