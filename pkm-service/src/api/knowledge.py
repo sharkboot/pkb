@@ -244,6 +244,49 @@ async def restore_knowledge_version(
     return BaseResponse(data={"restored_to_version": version_id, "knowledge": updated.dict()})
 
 
+@router.get("/knowledge/graph", response_model=BaseResponse)
+async def get_knowledge_graph():
+    """Get knowledge graph data (nodes and edges) for visualization."""
+    all_knowledge, _ = await knowledge_service.list_knowledge(
+        page=1, page_size=500
+    )
+
+    # Build nodes and edges
+    nodes = []
+    edges = []
+    seen_edges = set()
+
+    for knowledge in all_knowledge:
+        if knowledge.status.value in ("deleted", "archived"):
+            continue
+
+        node_id = str(knowledge.id)
+        nodes.append({
+            "id": node_id,
+            "title": knowledge.title,
+            "category": knowledge.category,
+            "tags": knowledge.tags,
+            "score": knowledge.score,
+            "status": knowledge.status.value,
+        })
+
+        # Build edges from relations
+        for related_id in knowledge.relations or []:
+            edge_key = tuple(sorted([node_id, related_id]))
+            if edge_key not in seen_edges:
+                seen_edges.add(edge_key)
+                edges.append({
+                    "source": edge_key[0],
+                    "target": edge_key[1],
+                })
+
+    return BaseResponse(data={
+        "nodes": nodes,
+        "edges": edges,
+        "total": len(nodes),
+    })
+
+
 @router.get("/knowledge/{knowledge_id}/versions", response_model=BaseResponse)
 async def get_knowledge_versions(knowledge_id: UUID = Path(...)):
     """Get version history for a knowledge item."""
