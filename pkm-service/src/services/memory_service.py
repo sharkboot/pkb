@@ -61,6 +61,7 @@ class MemoryIntegrationStatus:
     last_merge_time: Optional[datetime] = None
     last_dedup_time: Optional[datetime] = None
     last_summary_time: Optional[datetime] = None
+    last_score_time: Optional[datetime] = None
     daily_schedule_enabled: bool = False
     weekly_schedule_enabled: bool = False
     monthly_schedule_enabled: bool = False
@@ -629,6 +630,194 @@ class MemoryService:
         except Exception as e:
             logger.error(f"Summary generation failed: {e}")
             return SummaryResult(error=str(e))
+
+    async def score_knowledge(self, knowledge_id: UUID) -> KnowledgeUnit:
+        """Score a knowledge item based on access frequency, relations, and LLM importance.
+
+        Score components:
+        - Access frequency: based on recent updates (higher = more frequently accessed)
+        - Relation count: more related items = higher score
+        - LLM importance: analyze content importance via LLM
+        """
+        from services.knowledge_service import KnowledgeService
+        knowledge_service = KnowledgeService()
+
+        knowledge = await knowledge_service.get_knowledge(knowledge_id)
+
+        # Component 1: Recency-based score (weight 40%)
+        now = datetime.now()
+        days_since_update = (now - knowledge.updated_at).days
+        recency_score = max(0.0, min(1.0, 1.0 - days_since_update / 30.0))
+
+        # Component 2: Relation count score (weight 30%)
+        relation_count = len(knowledge.relations or [])
+        relation_score = min(1.0, relation_count / 5.0)
+
+        # Component 3: LLM importance score (weight 30%)
+        importance_prompt = f"""请评估以下知识内容的重要性（0-1分）：
+
+标题：{knowledge.title}
+摘要：{knowledge.summary or '(无)'}
+内容预览：{knowledge.content[:300]}
+
+请返回一个JSON对象：{{"importance": 分数（0-1之间）, "reason": "简要说明"}}
+只返回JSON，不要有其他内容。"""
+
+        try:
+            importance_result = await chat_completion(messages=[
+                {"role": "user", "content": importance_prompt}
+            ])
+            # Parse the JSON response
+            import re
+            json_match = re.search(r'\{.*\}', importance_result, re.DOTALL)
+            if json_match:
+                importance_data = json.loads(json_match.group())
+                importance_score = float(importance_data.get("importance", 0.5))
+            else:
+                importance_score = 0.5
+        except Exception as e:
+            logger.warning(f"Failed to get importance score for {knowledge_id}: {e}")
+            importance_score = 0.5
+
+        # Weighted combination
+        final_score = (
+            recency_score * 0.4 +
+            relation_score * 0.3 +
+            importance_score * 0.3
+        )
+        final_score = round(min(1.0, max(0.0, final_score)), 2)
+
+        # Update score
+        await knowledge_service.update_knowledge(
+            knowledge_id,
+            KnowledgeUpdateRequest(score=final_score)
+        )
+
+        logger.info(f"Knowledge {knowledge_id} scored: {final_score} "
+                     f"(recency={recency_score:.2f}, relations={relation_score:.2f}, "
+                     f"importance={importance_score:.2f})")
+
+        return await knowledge_service.get_knowledge(knowledge_id)
+
+    async def score_all(self) -> Dict[str, Any]:
+        """Score all active knowledge items.
+
+        Returns:
+            {"scored": int, "updated": int, "errors": int}
+        """
+        from services.knowledge_service import KnowledgeService
+        knowledge_service = KnowledgeService()
+
+        all_knowledge, _ = await knowledge_service.list_knowledge(
+            page=1, page_size=1000
+        )
+
+        # Filter to active items
+        candidates = [
+            k for k in all_knowledge
+            if k.status in [KnowledgeStatus.DRAFT, KnowledgeStatus.ACTIVE]
+        ]
+
+        scored = 0
+        updated = 0
+        errors = 0
+
+        for knowledge in candidates:
+            try:
+                scored += 1
+                updated_knowledge = await self.score_knowledge(knowledge.id)
+                if updated_knowledge.score != knowledge.score:
+                    updated += 1
+            except Exception as e:
+                logger.error(f"Failed to score knowledge {knowledge.id}: {e}")
+                errors += 1
+
+        # Update status
+        status = self._load_status()
+        status.last_score_time = datetime.now()
+        self._save_status(status)
+
+        return {
+            "scored": scored,
+            "updated": updated,
+            "errors": errors,
+        }
+
+    async def smart_forget(self, threshold: float = 0.3) -> Dict[str, Any]:
+        """Archive knowledge with score below threshold.
+
+        Args:
+            threshold: Score threshold below which knowledge is archived
+
+        Returns:
+            {"archived": int, "threshold": float}
+        """
+        from services.knowledge_service import KnowledgeService
+        knowledge_service = KnowledgeService()
+
+        all_knowledge, _ = await knowledge_service.list_knowledge(
+            page=1, page_size=1000
+        )
+
+        candidates = [
+            k for k in all_knowledge
+            if k.status in [KnowledgeStatus.DRAFT, KnowledgeStatus.ACTIVE]
+            and k.score < threshold
+        ]
+
+        archived = 0
+        for knowledge in candidates:
+            try:
+                await knowledge_service.update_knowledge(
+                    knowledge.id,
+                    KnowledgeUpdateRequest(status=KnowledgeStatus.ARCHIVED)
+                )
+                archived += 1
+            except Exception as e:
+                logger.error(f"Failed to archive knowledge {knowledge.id}: {e}")
+
+        return {
+            "archived": archived,
+            "threshold": threshold,
+        }
+
+    async def promote_hot(self, threshold: float = 0.8) -> Dict[str, Any]:
+        """Promote high-score knowledge to permanent notes.
+
+        Args:
+            threshold: Score threshold above which knowledge is promoted
+
+        Returns:
+            {"promoted": int, "threshold": float}
+        """
+        from services.knowledge_service import KnowledgeService
+        knowledge_service = KnowledgeService()
+
+        all_knowledge, _ = await knowledge_service.list_knowledge(
+            page=1, page_size=1000
+        )
+
+        candidates = [
+            k for k in all_knowledge
+            if k.status == KnowledgeStatus.ACTIVE
+            and k.score >= threshold
+        ]
+
+        promoted = 0
+        for knowledge in candidates:
+            try:
+                await knowledge_service.update_knowledge(
+                    knowledge.id,
+                    KnowledgeUpdateRequest(category="permanent_notes")
+                )
+                promoted += 1
+            except Exception as e:
+                logger.error(f"Failed to promote knowledge {knowledge.id}: {e}")
+
+        return {
+            "promoted": promoted,
+            "threshold": threshold,
+        }
 
     def _write_frontmatter(self, file_path: str, post: "frontmatter.Post"):
         """Write frontmatter to file"""

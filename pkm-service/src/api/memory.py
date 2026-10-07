@@ -261,13 +261,49 @@ async def build_relations(
 ):
     """
     Automatically build relations for a knowledge item.
-    
+
     - Finds similar knowledge using embeddings
     - Creates bidirectional links
     """
     result = await memory_service.build_relations(knowledge_id, limit=limit)
-    
+
     if "error" in result:
         return BaseResponse(code=1, message=result["error"])
-    
+
+    return BaseResponse(data=result)
+
+
+@router.post("/memory/score/{knowledge_id}", response_model=BaseResponse)
+async def score_knowledge(knowledge_id: str = Path(..., description="Knowledge ID")):
+    """Score a knowledge item based on access frequency, relations, and LLM importance."""
+    from uuid import UUID
+    try:
+        knowledge = await memory_service.score_knowledge(UUID(knowledge_id))
+        return BaseResponse(data={
+            "id": str(knowledge.id),
+            "score": knowledge.score,
+            "status": knowledge.status.value,
+        })
+    except Exception as e:
+        return BaseResponse(code=1, message=f"Failed to score: {str(e)}")
+
+
+@router.post("/memory/score/all", response_model=BaseResponse)
+async def score_all_knowledge():
+    """Score all active knowledge items."""
+    result = await memory_service.score_all()
+    return BaseResponse(data=result)
+
+
+@router.post("/memory/smart-forget", response_model=BaseResponse)
+async def smart_forget(threshold: float = Query(0.3, ge=0.0, le=1.0)):
+    """Archive knowledge with score below threshold."""
+    result = await memory_service.smart_forget(threshold=threshold)
+    return BaseResponse(data=result)
+
+
+@router.post("/memory/promote-hot", response_model=BaseResponse)
+async def promote_hot(threshold: float = Query(0.8, ge=0.0, le=1.0)):
+    """Promote high-score knowledge to permanent notes."""
+    result = await memory_service.promote_hot(threshold=threshold)
     return BaseResponse(data=result)
