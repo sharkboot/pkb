@@ -33,6 +33,22 @@ async def upload_image(
 async def import_markdown(
     file: UploadFile = File(...),
 ):
-    """导入 Markdown 文件并创建知识单元"""
+    """导入单个 Markdown 文件并创建知识单元"""
     result = await file_service.import_markdown(file)
     return BaseResponse(data=result.dict())
+
+
+@router.post("/files/import/markdown/batch", response_model=BaseResponse)
+async def import_markdown_batch(
+    file: UploadFile = File(...),
+):
+    """批量导入 zip 压缩包中的 Markdown 文件。
+
+    支持：
+    - 递归扫描所有 .md 文件
+    - 子目录自动映射到 category
+    - 相同内容自动去重
+    - 返回汇总报告（imported / skipped / errors）
+    """
+    result = await file_service.import_markdown_batch(file)
+    return BaseResponse(data=result)
